@@ -12,6 +12,7 @@
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 
 <style>
+/* ... Stil kodları öncekiyle tamamen aynı ... */
 :root{
   --bg:#0f1115; --paper:#12151c; --ink:#e7e9ee; --muted:#9aa3af;
   --accent:#5da9ff; --border:#1f2330; --soft:#181c25; --radius:14px;
@@ -99,12 +100,7 @@ body{
   </div>
 </div>
 <main id="homePage" class="page"></main>
-<main id="searchPage" class="page">
-  <div class="search-page">
-    <input type="search" class="search-bar" id="searchInput" placeholder="Fatoş Maçari yazıp ara...">
-    <div class="search-results" id="searchResults"></div>
-  </div>
-</main>
+<main id="searchPage" class="page"></main>
 <main id="profilePage" class="page"></main>
 <main id="postFeedPage" class="page feed"></main>
 <nav class="bottombar">
@@ -132,7 +128,8 @@ body{
 // --- VERİTABANI ---
 const USERS_DB = [
     { id: "peri", username: "peri", name: "Peri", avatar: "assets/peri-avatar.jpg", bio: "Hayallerimin peşindeyim...", stats: { posts: 3, followers: "212", following: 150 }, segments: [], posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`})), following: ["selimkaya"] },
-    { id: "fatosmacari", username: "fatosmacari", name: "Fatoş Maçari", avatar: "assets/fatos-avatar.jpg", bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨", stats: { posts: 12, followers: "18.4B", following: 320 }, segments: [ { sources: ["assets/fatos-story-1.mp4"], dur: 10 }, { sources: ["assets/green.jpg"], dur: 5 } ], posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`})) },
+    // GÜNCELLENDİ: Fatoş'un id ve username'i değiştirildi.
+    { id: "macari_fatos", username: "macari_fatos", name: "Fatoş Maçari", avatar: "assets/fatos-avatar.jpg", bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨", stats: { posts: 12, followers: "18.4B", following: 320 }, segments: [ { sources: ["assets/fatos-story-1.mp4"], dur: 10 }, { sources: ["assets/green.jpg"], dur: 5 } ], posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`})) },
     { id: "selimkaya", username: "selimkaya_art", name: "Selim Kaya", avatar: "assets/selim-avatar.jpg", bio: "Dijital Sanatçı | Renklerin peşinde.", stats: { posts: 6, followers: "5.2B", following: 150 }, segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }], posts: Array.from({length: 6}, (_, i) => ({ img: `assets/selim-post-${i + 1}.jpg`})) }
 ];
 
@@ -162,7 +159,7 @@ const tapRight = document.getElementById('tapRight');
 const postFeedPage = document.getElementById('postFeedPage');
 const viewerStage = document.getElementById('viewerStage');
 const topbarBack = document.getElementById('topbarBack');
-let lastProfileId = null; 
+let lastProfileId = null;
 
 // --- RENDER FONKSİYONLARI ---
 function renderHomePage() {
@@ -258,7 +255,6 @@ function navigateToPostFeed(userId, startIndex) {
         card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
         postFeedPage.appendChild(card);
     });
-    brandTitle.textContent = "Gönderiler";
     showPage('postFeedPage');
     setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView(); }, 50);
 }
@@ -275,21 +271,24 @@ function showPage(pageId) {
     brandContainer.style.transform = isSubPage ? 'none' : 'translateX(-50%)';
 
     let activeNav = null;
+    let newTitle = '';
     if(pageId === 'homePage') {
         activeNav = navHome;
-        brandTitle.textContent = 'Akış';
+        newTitle = 'Akış';
     } else if(pageId === 'searchPage') {
         activeNav = navSearch;
-        brandTitle.textContent = 'Arama';
+        newTitle = 'Arama';
     } else if(pageId === 'profilePage') {
         const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
         activeNav = (currentProfileUser && currentProfileUser.id === 'peri') ? navProfile : navSearch;
+        newTitle = brandTitle.textContent; // Başlık zaten navigateToProfile'da ayarlandı.
     } else if (pageId === 'postFeedPage') {
         activeNav = (lastProfileId === 'peri') ? navProfile : navSearch;
-        brandTitle.textContent = 'Gönderiler';
+        newTitle = 'Gönderiler';
     }
 
     if(activeNav) activeNav.classList.add('active');
+    brandTitle.textContent = newTitle;
 }
 function navigateToProfile(userId) {
     renderProfile(userId);
