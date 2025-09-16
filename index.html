@@ -54,8 +54,6 @@ body{
 .result-item{ display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; cursor: pointer; }
 .result-item:hover{ background-color: var(--soft); }
 .result-item img{ width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
-
-/* --- YENİ PROFİL TASARIMI --- */
 .profile-page{ max-width: var(--maxw); margin: 0 auto; padding: 24px 16px; }
 .profile-header{ display: flex; align-items: center; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px;}
 .profile-avatar-wrapper{ position: relative; cursor: pointer; width: 100px; height: 100px; flex-shrink: 0; }
@@ -72,13 +70,11 @@ body{
 .btn{ border:0; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
 .btn-primary{ background-color: var(--accent); color: white; }
 .btn-secondary{ background-color: var(--soft); color: var(--ink); }
-
 .post-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .grid-item{ cursor: pointer; }
 .grid-item img{ width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; }
-
 .bottombar{ position:fixed; left:10px; right:10px; bottom: calc(env(safe-area-inset-bottom) + 8px); height:58px; background:var(--paper); border:1px solid var(--border); border-radius:14px; display:flex; justify-content:space-around; align-items:center; z-index:30; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-.nav-item{cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:20px}
+.nav-item{cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:20px; background:none; border:none; color:inherit;}
 .nav-item span{font-size:12px; color:var(--muted); margin-top:2px}
 .nav-item.active span{color:var(--ink); font-weight: 600;}
 .viewer{ position: fixed; inset: 0; z-index: 100; display:none; background:#000; padding:0; }
@@ -100,7 +96,7 @@ body{
 </head>
 <body>
 
-<div class="topbar">
+<div class="topbar" role="banner">
     <div class="row">
         <div id="topbarBack" class="topbar-back">‹ Geri</div>
         <div class="brand centered" id="brandContainer">
@@ -109,34 +105,18 @@ body{
         </div>
     </div>
 </div>
+
 <main id="homePage" class="page"></main>
 <main id="searchPage" class="page"></main>
-<main id="profilePage" class="page">
-    <div class="profile-page">
-        <header class="profile-header">
-            <div id="profileAvatarWrapper" class="profile-avatar-wrapper">
-                <img id="profileAvatar" class="profile-avatar" src="" alt="Profil avatarı">
-            </div>
-            <div class="profile-details">
-                <h2 id="profileFullName" class="full-name"></h2>
-                <div id="profileUsername" class="username"></div>
-                <div id="profileStats" class="stats"></div>
-                <div id="profileBio" class="bio"></div>
-            </div>
-            <div id="profileActions" class="profile-actions">
-                <button class="btn btn-primary">Arkadaş ekle</button>
-                <button class="btn btn-secondary">Mesaj</button>
-            </div>
-        </header>
-        <section id="postGrid" class="post-grid" aria-label="Gönderiler"></section>
-    </div>
-</main>
+<main id="profilePage" class="page"></main>
 <main id="postFeedPage" class="page feed"></main>
+
 <nav class="bottombar">
-    <div class="nav-item" id="navHome">🏠<span>Ana Sayfa</span></div>
-    <div class="nav-item" id="navSearch">🔍<span>Arama</span></div>
-    <div class="nav-item" id="navProfile">👤<span>Profil</span></div>
+    <button class="nav-item" id="navHome">🏠<span>Ana Sayfa</span></button>
+    <button class="nav-item" id="navSearch">🔍<span>Arama</span></button>
+    <button class="nav-item" id="navProfile">👤<span>Profil</span></button>
 </nav>
+
 <div class="viewer" id="viewer" aria-hidden="true">
     <div class="viewer-inner">
         <div class="viewer-top">
@@ -155,14 +135,13 @@ body{
 
 <script>
 // --- VERİTABANI ---
-// GÜNCELLENDİ: İstatistikler "arkadaş" olarak değiştirildi. "Selim Kaya" yerine "Dursun Yılmaz" eklendi.
 const USERS_DB = [
     { id: "peri", username: "peri", name: "Peri", avatar: "assets/peri-avatar.jpg", bio: "Hayallerimin peşindeyim...", stats: { posts: 3, friends: 150 }, segments: [], posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`})), following: ["dursunyilmaz"] },
     { id: "macari_fatos", username: "macari_fatos", name: "Fatoş Maçari", avatar: "assets/fatos-avatar.jpg", bio: "...", stats: { posts: 12, friends: "18.4B" }, segments: [ { sources: ["assets/fatos-story-1.mp4"], dur: 10 }, { sources: ["assets/green.jpg"], dur: 5 } ], posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`})) },
-    { id: "dursunyilmaz", username: "yilmazdursun5353", name: "Dursun Yılmaz", avatar: "assets/dursun-avatar.jpg", bio: "...", stats: { posts: 15, friends: 128 }, segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }], posts: Array.from({length: 15}, (_, i) => ({ img: `assets/dursun-post-${i + 1}.jpg`})) }
+    { id: "dursunyilmaz", username: "yilmazdursun5353", name: "Dursun Yılmaz", avatar: "assets/dursun-avatar.jpg", bio: "...", stats: { posts: 15, friends: 128 }, segments: [ { sources: ["assets/dursun-story-1.mp4"], dur: 8 }], posts: Array.from({length: 15}, (_, i) => ({ img: `assets/dursun-post-${i + 1}.jpg`})) }
 ];
 
-// --- ANA SAYFA MANTIĞI ---
+// --- ANA SAYFA MANTIĞI (STALKLAMA) ---
 const periUser = USERS_DB.find(u => u.id === 'peri');
 const followedUsers = USERS_DB.filter(u => periUser.following.includes(u.id));
 const STORIES_DB = followedUsers.filter(u => u.segments.length > 0);
@@ -183,16 +162,56 @@ const vAvatar = document.getElementById('vAvatar');
 const btnClose = document.getElementById('btnClose');
 const tapLeft = document.getElementById('tapLeft');
 const tapRight = document.getElementById('tapRight');
-const postFeedPage = document.getElementById('postFeedPage');
 const viewerStage = document.getElementById('viewerStage');
 const topbarBack = document.getElementById('topbarBack');
 let lastProfileId = null;
 
 // --- RENDER FONKSİYONLARI ---
-function renderHomePage() { /* Önceki kodla aynı */ }
-
-// GÜNCELLENDİ: Yeni profil tasarımını doldurur
+function renderHomePage() {
+    const homePage = document.getElementById('homePage');
+    homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
+    const storiesContainer = homePage.querySelector('.stories');
+    const feedContainer = homePage.querySelector('.feed');
+    const periChip = document.createElement('button');
+    periChip.className = 'story-chip me';
+    periChip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${periUser.avatar}" alt="${periUser.name}"></div><div class="story-name">Hikayen</div>`;
+    periChip.onclick = () => alert('Kendi hikayeni ekle (simülasyon)');
+    storiesContainer.appendChild(periChip);
+    STORIES_DB.forEach(s => {
+        const chip = document.createElement('button');
+        chip.className = 'story-chip';
+        chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
+        chip.onclick = () => openViewer(STORIES_DB, s.id);
+        storiesContainer.appendChild(chip);
+    });
+    FEED_DB.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<div class="head"><img src="${p.user.avatar}" alt="${p.user.username}"><div class="user">${p.user.username}</div></div><img class="media" src="${p.post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
+        feedContainer.appendChild(card);
+    });
+}
 function renderProfile(userId) {
+    const profilePage = document.getElementById('profilePage');
+    profilePage.innerHTML = `
+        <div class="profile-page">
+            <header class="profile-header">
+                <div id="profileAvatarWrapper" class="profile-avatar-wrapper">
+                    <img id="profileAvatar" class="profile-avatar" src="" alt="Profil avatarı">
+                </div>
+                <div class="profile-details">
+                    <h2 id="profileFullName" class="full-name"></h2>
+                    <div id="profileUsername" class="username"></div>
+                    <div id="profileStats" class="stats"></div>
+                    <div id="profileBio" class="bio"></div>
+                </div>
+                <div id="profileActions" class="profile-actions">
+                    <button class="btn btn-primary">Arkadaş ekle</button>
+                    <button class="btn btn-secondary">Mesaj</button>
+                </div>
+            </header>
+            <section id="postGrid" class="post-grid"></section>
+        </div>`;
     const user = USERS_DB.find(u => u.id === userId);
     if (!user) return;
     document.getElementById('profileAvatar').src = user.avatar;
@@ -200,11 +219,7 @@ function renderProfile(userId) {
     document.getElementById('profileUsername').textContent = `@${user.username}`;
     document.getElementById('profileBio').textContent = user.bio;
     document.getElementById('profileStats').innerHTML = `<strong>${user.stats.posts}</strong> gönderi  ·  <strong>${user.stats.friends}</strong> arkadaş`;
-    
-    // Butonları yönet: Sadece başkasının profiline bakarken göster
-    const actions = document.getElementById('profileActions');
-    actions.style.display = (userId === 'peri') ? 'none' : 'flex';
-
+    document.getElementById('profileActions').style.display = (userId === 'peri') ? 'none' : 'flex';
     const avatarWrapper = document.getElementById('profileAvatarWrapper');
     if (user.segments && user.segments.length > 0) {
         avatarWrapper.classList.add('has-story');
@@ -214,7 +229,6 @@ function renderProfile(userId) {
         avatarWrapper.onclick = null;
     }
     const gridContainer = document.getElementById('postGrid');
-    gridContainer.innerHTML = '';
     user.posts.forEach((post, index) => {
         const gridItem = document.createElement('div');
         gridItem.className = 'grid-item';
@@ -223,142 +237,99 @@ function renderProfile(userId) {
         gridContainer.appendChild(gridItem);
     });
 }
-function renderSearchResults(query) { /* Önceki kodla aynı */ }
+function renderSearchResults(query) {
+    const searchResults = document.getElementById('searchResults');
+    const normalizedQuery = query.toLowerCase().trim();
+    if (normalizedQuery.length < 2) { searchResults.innerHTML = ''; return; }
+    const results = USERS_DB.filter(u => (u.name.toLowerCase().includes(normalizedQuery) || u.username.toLowerCase().includes(normalizedQuery)) && u.id !== 'peri');
+    searchResults.innerHTML = '';
+    results.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `<img src="${user.avatar}" alt="${user.name}"><div class="names"><div class="name">${user.name}</div></div>`;
+        item.onclick = () => navigateToProfile(user.id);
+        searchResults.appendChild(item);
+    });
+}
 
 // --- HİKAYE İZLEYİCİ ---
 let storyDataSource = [], currentSourceIndex = 0, currentSegmentIndex = 0, timerId = null;
-function openViewer(source, startId) { /* Önceki kodla aynı */ }
-function closeViewer() { /* Önceki kodla aynı */ }
-async function loadCurrentSegment() { /* Önceki kodla aynı */ }
-function renderProgress(total, activeIndex) { /* Önceki kodla aynı */ }
-function startTimer(ms) { /* Önceki kodla aynı */ }
+function openViewer(source, startId) { storyDataSource = source; currentSourceIndex = Math.max(0, source.findIndex(s => s.id === startId)); currentSegmentIndex = 0; viewer.classList.add('active'); document.documentElement.style.overflow = 'hidden'; loadCurrentSegment(); }
+function closeViewer() { viewer.classList.remove('active'); document.documentElement.style.overflow = ''; clearTimer(); const videoEl = viewerStage.querySelector('video'); if (videoEl) videoEl.pause(); }
+async function loadCurrentSegment() { const user = storyDataSource[currentSourceIndex]; const segment = user.segments[currentSegmentIndex]; if (!user || !segment) { closeViewer(); return; } vName.textContent = user.name; vAvatar.src = user.avatar; renderProgress(user.segments.length, currentSegmentIndex); clearTimer(); viewerStage.innerHTML = ''; const sourceUrl = segment.sources[0]; const isImage = sourceUrl.match(/\.(jpeg|jpg|png|gif|webp)$/); if (isImage) { const img = document.createElement('img'); img.src = sourceUrl; img.className = 'story-media'; viewerStage.appendChild(img); startTimer((segment.dur || 7) * 1000); } else { const video = document.createElement('video'); video.className = 'story-media'; video.playsInline = true; video.webkitPlaysInline = true; video.muted = true; video.preload = 'metadata'; video.src = sourceUrl; video.addEventListener('ended', nextSegment); viewerStage.appendChild(video); try { await video.play(); startTimer((segment.dur || video.duration)*1000); } catch (e) { nextSegment(); } } }
+function renderProgress(total, activeIndex) { progress.innerHTML = ''; for (let i = 0; i < total; i++) { const seg = document.createElement('div'); seg.className = 'seg'; seg.innerHTML = `<i style="width:${i < activeIndex ? 100 : 0}%"></i>`; progress.appendChild(seg); } }
+function startTimer(ms) { const start = performance.now(); const segBar = progress.children[currentSegmentIndex]?.firstElementChild; if (!segBar) return; function tick(now) { const pct = Math.min(100, ((now - start) / ms) * 100); segBar.style.width = pct + '%'; if (pct >= 100) { nextSegment(); return; } timerId = requestAnimationFrame(tick); } timerId = requestAnimationFrame(tick); }
 function clearTimer() { if (timerId) cancelAnimationFrame(timerId); timerId = null; }
-function nextSegment() { /* Önceki kodla aynı */ }
-function prevSegment() { /* Önceki kodla aynı */ }
-function nextStory() { /* Önceki kodla aynı */ }
-function prevStory() { /* Önceki kodla aynı */ }
+function nextSegment() { const user = storyDataSource[currentSourceIndex]; if (currentSegmentIndex < user.segments.length - 1) { currentSegmentIndex++; loadCurrentSegment(); } else { nextStory(); } }
+function prevSegment() { if (currentSegmentIndex > 0) { currentSegmentIndex--; loadCurrentSegment(); } else { prevStory(); } }
+function nextStory() { if (currentSourceIndex < storyDataSource.length - 1) { currentSourceIndex++; currentSegmentIndex = 0; loadCurrentSegment(); } else { closeViewer(); } }
+function prevStory() { if (currentSourceIndex > 0) { currentSourceIndex--; currentSegmentIndex = 0; loadCurrentSegment(); } }
 btnClose.onclick = closeViewer;
 tapRight.addEventListener('click', nextSegment);
 tapLeft.addEventListener('click', prevSegment);
 
 // --- DİKEY GÖNDERİ AKIŞI ---
-function navigateToPostFeed(userId, startIndex) { /* Önceki kodla aynı */ }
+function navigateToPostFeed(userId, startIndex) {
+    lastProfileId = userId;
+    const user = USERS_DB.find(u => u.id === userId);
+    if (!user) return;
+    const postFeedPage = document.getElementById('postFeedPage');
+    postFeedPage.innerHTML = '';
+    user.posts.forEach((post, index) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.id = `post-feed-${index}`;
+        card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
+        postFeedPage.appendChild(card);
+    });
+    showPage('postFeedPage');
+    setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+}
 
 // --- NAVİGASYON ---
-function showPage(pageId) { /* Önceki kodla aynı */ }
-function navigateToProfile(userId) { /* Önceki kodla aynı */ }
+function showPage(pageId) {
+    allPages.forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    const isSubPage = pageId === 'postFeedPage';
+    topbarBack.classList.toggle('visible', isSubPage);
+    brandLogo.style.display = isSubPage ? 'none' : 'block';
+    brandContainer.classList.toggle('centered', !isSubPage);
+    let activeNav = null;
+    let newTitle = brandTitle.textContent;
+    if(pageId === 'homePage') {
+        activeNav = navHome;
+        newTitle = 'Akış';
+    } else if(pageId === 'searchPage') {
+        activeNav = navSearch;
+        newTitle = 'Arama';
+    } else if(pageId === 'profilePage') {
+        const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
+        activeNav = (currentProfileUser && currentProfileUser.id === 'peri') ? navProfile : navSearch;
+    } else if (pageId === 'postFeedPage') {
+        activeNav = (lastProfileId === 'peri') ? navProfile : navSearch;
+        newTitle = 'Gönderiler';
+    }
+    if(activeNav) activeNav.classList.add('active');
+    brandTitle.textContent = newTitle;
+}
+function navigateToProfile(userId) {
+    renderProfile(userId);
+    const user = USERS_DB.find(u => u.id === userId);
+    if (!user) return;
+    brandTitle.textContent = user.username;
+    showPage('profilePage');
+}
 navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
 navProfile.onclick = () => navigateToProfile('peri');
 topbarBack.onclick = () => { if(lastProfileId) navigateToProfile(lastProfileId); };
-const searchInput = document.getElementById('searchInput');
 let searchTimer;
+const searchInput = document.getElementById('searchInput');
 searchInput.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { renderSearchResults(searchInput.value); }, 400); };
 
 // --- İLK YÜKLEME ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Fonksiyonların tam hallerini buraya ekliyoruz
-    window.renderHomePage = function() {
-        const homePage = document.getElementById('homePage');
-        homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
-        const storiesContainer = homePage.querySelector('.stories');
-        const feedContainer = homePage.querySelector('.feed');
-        const periChip = document.createElement('button');
-        periChip.className = 'story-chip me';
-        periChip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${periUser.avatar}" alt="${periUser.name}"></div><div class="story-name">Hikayen</div>`;
-        periChip.onclick = () => alert('Kendi hikayeni ekle (simülasyon)');
-        storiesContainer.appendChild(periChip);
-        if (STORIES_DB.length === 0 && followedUsers.length > 0) storiesContainer.style.padding = '10px 12px 0';
-        STORIES_DB.forEach(s => {
-            const chip = document.createElement('button');
-            chip.className = 'story-chip';
-            chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
-            chip.onclick = () => openViewer(STORIES_DB, s.id);
-            storiesContainer.appendChild(chip);
-        });
-        FEED_DB.forEach(p => {
-            const card = document.createElement('article');
-            card.className = 'card';
-            card.innerHTML = `<div class="head"><img src="${p.user.avatar}" alt="${p.user.username}"><div class="user">${p.user.username}</div></div><img class="media" src="${p.post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
-            feedContainer.appendChild(card);
-        });
-    }
-
-    window.renderSearchResults = function(query) {
-        const searchResults = document.getElementById('searchResults');
-        const normalizedQuery = query.toLowerCase().trim();
-        if (normalizedQuery.length < 2) { searchResults.innerHTML = ''; return; }
-        const results = USERS_DB.filter(u => (u.name.toLowerCase().includes(normalizedQuery) || u.username.toLowerCase().includes(normalizedQuery)) && u.id !== 'peri');
-        searchResults.innerHTML = '';
-        results.forEach(user => {
-            const item = document.createElement('div');
-            item.className = 'result-item';
-            item.innerHTML = `<img src="${user.avatar}" alt="${user.name}"><div class="names"><div class="name">${user.name}</div></div>`;
-            item.onclick = () => navigateToProfile(user.id);
-            searchResults.appendChild(item);
-        });
-    }
-
-    window.openViewer = function(source, startId) { storyDataSource = source; currentSourceIndex = Math.max(0, source.findIndex(s => s.id === startId)); currentSegmentIndex = 0; viewer.classList.add('active'); document.documentElement.style.overflow = 'hidden'; loadCurrentSegment(); }
-    window.closeViewer = function() { viewer.classList.remove('active'); document.documentElement.style.overflow = ''; clearTimer(); const videoEl = viewerStage.querySelector('video'); if (videoEl) videoEl.pause(); }
-    window.loadCurrentSegment = async function() { const user = storyDataSource[currentSourceIndex]; const segment = user.segments[currentSegmentIndex]; if (!user || !segment) { closeViewer(); return; } vName.textContent = user.name; vAvatar.src = user.avatar; renderProgress(user.segments.length, currentSegmentIndex); clearTimer(); viewerStage.innerHTML = ''; const sourceUrl = segment.sources[0]; const isImage = sourceUrl.match(/\.(jpeg|jpg|png|gif|webp)$/); if (isImage) { const img = document.createElement('img'); img.src = sourceUrl; img.className = 'story-media'; viewerStage.appendChild(img); startTimer((segment.dur || 7) * 1000); } else { const video = document.createElement('video'); video.className = 'story-media'; video.playsInline = true; video.webkitPlaysInline = true; video.muted = true; video.preload = 'metadata'; video.src = sourceUrl; video.addEventListener('ended', nextSegment); viewerStage.appendChild(video); try { await video.play(); startTimer((segment.dur || video.duration)*1000); } catch (e) { nextSegment(); } } }
-    window.renderProgress = function(total, activeIndex) { progress.innerHTML = ''; for (let i = 0; i < total; i++) { const seg = document.createElement('div'); seg.className = 'seg'; seg.innerHTML = `<i style="width:${i < activeIndex ? 100 : 0}%"></i>`; progress.appendChild(seg); } }
-    window.startTimer = function(ms) { const start = performance.now(); const segBar = progress.children[currentSegmentIndex]?.firstElementChild; if (!segBar) return; function tick(now) { const pct = Math.min(100, ((now - start) / ms) * 100); segBar.style.width = pct + '%'; if (pct >= 100) { nextSegment(); return; } timerId = requestAnimationFrame(tick); } timerId = requestAnimationFrame(tick); }
-    window.nextSegment = function() { const user = storyDataSource[currentSourceIndex]; if (currentSegmentIndex < user.segments.length - 1) { currentSegmentIndex++; loadCurrentSegment(); } else { nextStory(); } }
-    window.prevSegment = function() { if (currentSegmentIndex > 0) { currentSegmentIndex--; loadCurrentSegment(); } else { prevStory(); } }
-    window.nextStory = function() { if (currentSourceIndex < storyDataSource.length - 1) { currentSourceIndex++; currentSegmentIndex = 0; loadCurrentSegment(); } else { closeViewer(); } }
-    window.prevStory = function() { if (currentSourceIndex > 0) { currentSourceIndex--; currentSegmentIndex = 0; loadCurrentSegment(); } }
-    
-    window.navigateToPostFeed = function(userId, startIndex) {
-        lastProfileId = userId;
-        const user = USERS_DB.find(u => u.id === userId);
-        if (!user) return;
-        postFeedPage.innerHTML = '';
-        user.posts.forEach((post, index) => {
-            const card = document.createElement('article');
-            card.className = 'card';
-            card.id = `post-feed-${index}`;
-            card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
-            postFeedPage.appendChild(card);
-        });
-        showPage('postFeedPage');
-        setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-    }
-    
-    window.showPage = function(pageId) {
-        allPages.forEach(page => page.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        const isSubPage = pageId === 'postFeedPage';
-        topbarBack.classList.toggle('visible', isSubPage);
-        brandLogo.style.display = isSubPage ? 'none' : 'block';
-        brandContainer.classList.toggle('centered', !isSubPage);
-        let activeNav = null;
-        let newTitle = brandTitle.textContent;
-        if(pageId === 'homePage') {
-            activeNav = navHome;
-            newTitle = 'Akış';
-        } else if(pageId === 'searchPage') {
-            activeNav = navSearch;
-            newTitle = 'Arama';
-        } else if(pageId === 'profilePage') {
-            const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
-            activeNav = (currentProfileUser && currentProfileUser.id === 'peri') ? navProfile : navSearch;
-        } else if (pageId === 'postFeedPage') {
-            activeNav = (lastProfileId === 'peri') ? navProfile : navSearch;
-            newTitle = 'Gönderiler';
-        }
-        if(activeNav) activeNav.classList.add('active');
-        brandTitle.textContent = newTitle;
-    }
-    
-    window.navigateToProfile = function(userId) {
-        renderProfile(userId);
-        const user = USERS_DB.find(u => u.id === userId);
-        brandTitle.textContent = user.username;
-        showPage('profilePage');
-    }
-    
     renderHomePage();
     showPage('homePage');
 });
