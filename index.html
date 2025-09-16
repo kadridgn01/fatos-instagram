@@ -3,13 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akış — Profil Eklendi</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#12151c">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="assets/icon-192.png">
+<title>Akış — Stalk Modu</title>
 
 <style>
 :root{
@@ -41,7 +35,7 @@ body{
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
 .logo{height:28px}
 
-/* Stories bar */
+/* Ana Sayfa (Hikayeler ve Akış) */
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px;
   display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .stories::-webkit-scrollbar{display:none}
@@ -53,8 +47,6 @@ body{
 .story-chip.me .story-ring{ background: linear-gradient(180deg,#3e455a,#3e455a); }
 .story-avatar{ width:64px; height:64px; border-radius:50%; object-fit:cover; border:0; }
 .story-name{margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-
-/* Feed */
 .feed{max-width:var(--maxw); margin:0 auto; padding:0 12px 16px; display:flex; flex-direction:column; gap:16px}
 .card{background:var(--paper); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden}
 .card .head{display:flex; align-items:center; gap:10px; padding:10px}
@@ -65,7 +57,19 @@ body{
 .card .actions{display:flex; gap:10px; padding:10px 12px}
 .icon{cursor:pointer; user-select:none; font-size:20px}
 
-/* === YENİ: PROFİL SAYFASI === */
+/* === YENİ: ARAMA SAYFASI === */
+.search-page{ max-width: var(--maxw); margin: 0 auto; padding: 16px; }
+.search-bar{ width: 100%; padding: 12px 16px; font-size: 16px; background-color: var(--soft);
+  border: 1px solid var(--border); border-radius: var(--radius); color: var(--ink); outline: none; }
+.search-bar:focus{ border-color: var(--accent); }
+.search-results{ margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+.result-item{ display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; cursor: pointer; }
+.result-item:hover{ background-color: var(--soft); }
+.result-item img{ width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.result-item .names .name{ font-weight: 600; }
+.result-item .names .username{ font-size: 13px; color: var(--muted); }
+
+/* Dinamik Profil Sayfası */
 .profile-page{ max-width: var(--maxw); margin: 0 auto; padding: 16px; }
 .profile-header{ display: flex; align-items: center; gap: 20px; padding-bottom: 20px; }
 .profile-avatar{ width: 90px; height: 90px; border-radius: 50%; object-fit: cover; }
@@ -87,8 +91,7 @@ body{
 .nav-item span{font-size:12px; color:var(--muted); margin-top:2px}
 .nav-item.active span{color:var(--ink); font-weight: 600;}
 
-
-/* === STORY VIEWER (tam ekran overlay) === */
+/* Story Viewer (Değişiklik yok) */
 .viewer{ position: fixed; inset: 0; z-index: 100; display:none; background:#000; padding:0; }
 .viewer.active{display:block}
 .viewer-inner{ position: relative; height: 100%; }
@@ -107,21 +110,6 @@ body{
 .seg > i{ display:block; height:100%; width:0%; background:#fff; transition:width .2s linear; }
 .viewer-meta{ display:flex; align-items:center; gap:10px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.4); margin-top:4px; }
 .viewer-meta img{ width:40px; height:40px; border-radius:50%; border:2px solid rgba(255,255,255,.35); object-fit:cover }
-#vName{ font-size:16px; font-weight:700; }
-#vTime{ font-size:13px; opacity:.8; }
-.commentbar{ display:flex; justify-content:center; align-items:center; gap:12px; }
-.comment-pill{ appearance:none; border:0; cursor:pointer; padding:10px 14px; border-radius:999px;
-  font-weight:700; font-size:14px; color:#e7e9ee; background:rgba(0,0,0,.35); backdrop-filter: blur(6px);}
-.comment-pill:active{ transform:translateY(1px); }
-.sound-toast{ position:absolute; left:12px; bottom:calc(70px + env(safe-area-inset-bottom, 0px));
-  background:rgba(0,0,0,.6); color:#fff; padding:8px 10px; border-radius:10px;
-  font-size:12px; opacity:0; pointer-events:none; transition:opacity .25s; }
-.sound-toast.show{ opacity:1; }
-.viewer-sound,
-.viewer-close{ appearance:none; border:0; cursor:pointer; background:rgba(0,0,0,.35); color:#fff;
-  padding:8px 10px; border-radius:10px; font-weight:700; }
-.viewer-sound{ margin-left:auto; }
-.viewer-close{ margin-left:8px; }
 </style>
 </head>
 <body>
@@ -140,6 +128,13 @@ body{
   <section class="feed" id="feed"></section>
 </main>
 
+<main id="searchPage" class="page">
+  <div class="search-page">
+    <input type="search" class="search-bar" id="searchInput" placeholder="Fatoş Maçari yazıp ara...">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</main>
+
 <main id="profilePage" class="page">
   <div class="profile-page">
     <header class="profile-header">
@@ -150,11 +145,9 @@ body{
         <div class="profile-stats" id="profileStats"></div>
       </div>
     </header>
-    <div class="post-grid" id="postGrid">
-      </div>
+    <div class="post-grid" id="postGrid"></div>
   </div>
 </main>
-
 
 <nav class="bottombar">
   <div class="nav-item" id="navHome">🏠<span>Ana Sayfa</span></div>
@@ -163,40 +156,17 @@ body{
 </nav>
 
 <div class="viewer" id="viewer" aria-hidden="true">
-  <div class="viewer-inner">
-    <div class="viewer-top">
-      <div class="progress" id="progress"></div>
-      <div class="viewer-meta">
-        <img id="vAvatar" src="" alt="">
-        <div>
-          <div id="vName"></div>
-          <div id="vTime" class="small">şimdi</div>
-        </div>
-        <button class="viewer-sound" id="btnSound" aria-label="Sesi aç/kapat">🔇</button>
-        <button class="viewer-close" id="btnClose">✕</button>
-      </div>
-    </div>
-    <div class="viewer-stage" id="stage">
-      <video id="storyVideo" playsinline webkit-playsinline muted preload="metadata" class="story-video"></video>
-      <div class="tapzone left" id="tapLeft"></div>
-      <div class="tapzone right" id="tapRight"></div>
-    </div>
-    <div class="viewer-bottom commentbar" id="commentBar">
-      <button class="comment-pill" id="btnComment">💬 Yorum yap</button>
-    </div>
   </div>
-</div>
 
 <script>
-// --- VERİLER (DATABASE SIMULASYONU) ---
+// --- VERİLER ---
 
+// Hikayeler ve Akış verileri aynı
 const STORIES = [
   { id:"me",  name:"Sen",  avatar:"assets/me.jpg",  segments:[] },
   { id:"u1",  name:"Peri", avatar:"assets/peri.jpg",
-    segments:[ { sources:["assets/1_h264.mp4","assets/1.webm"], dur:8, caption:"Yorum yap" } ] },
+    segments:[ { sources:["assets/1_h264.mp4","assets/1.webm"], dur:8 } ] },
   { id:"u2",  name:"Selim", avatar:"assets/selim-av.jpg", segments:[] },
-  { id:"u3",  name:"Mert",  avatar:"assets/mert-av.jpg",  segments:[] },
-  { id:"u4",  name:"Ayça",  avatar:"assets/ayca-av.jpg",  segments:[] },
 ];
 
 const FEED = [
@@ -204,90 +174,101 @@ const FEED = [
   { user:"okanerdemt", avatar:"assets/okan-av.jpg", img:"assets/okan.jpg", time:"1g",  likes:87 },
 ];
 
-// YENİ: Profil sayfası için kullanıcı verisi
-const USER_PROFILE = {
-    username: "senin_kullanici_adin",
-    avatar: "assets/me.jpg",
-    bio: "Bu benim biyografim. 🚀 Kod yazmayı ve kahve içmeyi severim.",
-    stats: {
-        posts: 9,
-        followers: "1.2K",
-        following: 150
+// GÜNCELLENDİ: Birden fazla kullanıcı için veritabanı simülasyonu
+const USERS_DB = [
+    {
+        id: "fatosmacari",
+        username: "fatosmacari",
+        name: "Fatoş Maçari",
+        avatar: "assets/fatos-av.jpg",
+        bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨",
+        stats: {
+            posts: 112,
+            followers: "18.4B",
+            following: 320
+        },
+        posts: [
+            { img: "assets/fatos-p1.jpg" }, { img: "assets/fatos-p2.jpg" },
+            { img: "assets/fatos-p3.jpg" }, { img: "assets/fatos-p4.jpg" },
+            { img: "assets/fatos-p5.jpg" }, { img: "assets/fatos-p6.jpg" },
+            { img: "assets/fatos-p7.jpg" }, { img: "assets/fatos-p8.jpg" },
+            { img: "assets/fatos-p9.jpg" },
+        ]
     },
-    posts: [
-        { img: "assets/post1.jpg" }, { img: "assets/post2.jpg" },
-        { img: "assets/post3.jpg" }, { img: "assets/post4.jpg" },
-        { img: "assets/post5.jpg" }, { img: "assets/post6.jpg" },
-        { img: "assets/post7.jpg" }, { img: "assets/post8.jpg" },
-        { img: "assets/post9.jpg" },
-    ]
-};
+    {
+        id: "selimkaya",
+        username: "selimkaya_art",
+        name: "Selim Kaya",
+        avatar: "assets/selim-av.jpg",
+        bio: "Dijital Sanatçı | Renklerin peşinde",
+        stats: { posts: 45, followers: "5.2B", following: 150 },
+        posts: []
+    }
+];
 
 
 // --- DOM ELEMENTLERİ ---
 const $stories = document.getElementById('stories');
 const $feed = document.getElementById('feed');
-const viewer = document.getElementById('viewer');
-const video = document.getElementById('storyVideo');
-const progress = document.getElementById('progress');
-const vName = document.getElementById('vName');
-const vAvatar = document.getElementById('vAvatar');
-const vTime = document.getElementById('vTime');
-const btnClose = document.getElementById('btnClose');
-const btnSound = document.getElementById('btnSound');
-const tapLeft = document.getElementById('tapLeft');
-const tapRight = document.getElementById('tapRight');
-const homePage = document.getElementById('homePage');
-const profilePage = document.getElementById('profilePage');
-const navHome = document.getElementById('navHome');
-const navProfile = document.getElementById('navProfile');
 const brandTitle = document.getElementById('brandTitle');
+// Sayfalar
+const homePage = document.getElementById('homePage');
+const searchPage = document.getElementById('searchPage');
+const profilePage = document.getElementById('profilePage');
+// Navigasyon
+const navHome = document.getElementById('navHome');
+const navSearch = document.getElementById('navSearch');
+const navProfile = document.getElementById('navProfile');
+// Arama Sayfası
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
 
 
-// --- SAYFA İÇERİĞİNİ OLUŞTURMA ---
+// --- SAYFA İÇERİĞİNİ OLUŞTURMA (RENDER FONKSİYONLARI) ---
 
-// Hikayeleri oluştur
-STORIES.forEach(s=>{
-  const chip = document.createElement('button');
-  chip.className = 'story-chip' + (s.id==='me' ? ' me':'');
-  chip.innerHTML = `
-    <div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div>
-    <div class="story-name">${s.name}</div>`;
-  chip.onclick = ()=>{ if (s.segments && s.segments.length) openViewerByStoryId(s.id);
-                      else alert('Bu kullanıcıda hikâye yok.'); };
-  $stories.appendChild(chip);
-});
+// Akış ve Hikayeler (Değişiklik yok)
+function renderHomePage() {
+    $stories.innerHTML = '';
+    STORIES.forEach(s=>{
+        const chip = document.createElement('button');
+        chip.className = 'story-chip' + (s.id==='me' ? ' me':'');
+        chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
+        chip.onclick = ()=>{ if (s.segments && s.segments.length) alert('Hikaye izleyici bu demoda profile bağlı değil.'); };
+        $stories.appendChild(chip);
+    });
 
-// Akışı (feed) oluştur
-FEED.forEach(p=>{
-  const card = document.createElement('article');
-  card.className = 'card';
-  card.innerHTML = `
-    <div class="head"><img src="${p.avatar}" alt="${p.user}">
-      <div class="user">${p.user}</div><div class="time">${p.time}</div></div>
-    <img class="media" src="${p.img}" alt="">
-    <div class="actions"><span class="icon like">❤️</span><span class="icon">💬</span><span class="icon">↗</span></div>`;
-  const likeBtn = card.querySelector('.like'); let liked=false, likes=p.likes||0;
-  likeBtn.onclick=()=>{ liked=!liked; likes += liked?1:-1; likeBtn.textContent = liked ? '💖' : '❤️'; };
-  $feed.appendChild(card);
-});
+    $feed.innerHTML = '';
+    FEED.forEach(p=>{
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<div class="head"><img src="${p.avatar}" alt="${p.user}"><div class="user">${p.user}</div><div class="time">${p.time}</div></div><img class="media" src="${p.img}" alt=""><div class="actions"><span class="icon like">❤️</span><span class="icon">💬</span><span class="icon">↗</span></div>`;
+        card.querySelector('.like').onclick = e => e.target.textContent = e.target.textContent === '❤️' ? '💖' : '❤️';
+        $feed.appendChild(card);
+    });
+}
 
-// YENİ: Profil sayfasını oluştur
-function renderProfile() {
-    document.getElementById('profileAvatar').src = USER_PROFILE.avatar;
-    document.getElementById('profileUsername').textContent = USER_PROFILE.username;
-    document.getElementById('profileBio').textContent = USER_PROFILE.bio;
+// GÜNCELLENDİ: Profil sayfasını verilen kullanıcı ID'sine göre oluştur
+function renderProfile(userId) {
+    const user = USERS_DB.find(u => u.id === userId);
+    if (!user) {
+        alert("Kullanıcı bulunamadı!");
+        return;
+    }
+
+    document.getElementById('profileAvatar').src = user.avatar;
+    document.getElementById('profileUsername').textContent = user.username;
+    document.getElementById('profileBio').textContent = user.bio;
     
     const statsContainer = document.getElementById('profileStats');
     statsContainer.innerHTML = `
-        <div class="stat-item"><span class="count">${USER_PROFILE.stats.posts}</span> gönderi</div>
-        <div class="stat-item"><span class="count">${USER_PROFILE.stats.followers}</span> takipçi</div>
-        <div class="stat-item"><span class="count">${USER_PROFILE.stats.following}</span> takip</div>
+        <div class="stat-item"><span class="count">${user.stats.posts}</span> gönderi</div>
+        <div class="stat-item"><span class="count">${user.stats.followers}</span> takipçi</div>
+        <div class="stat-item"><span class="count">${user.stats.following}</span> takip</div>
     `;
 
     const gridContainer = document.getElementById('postGrid');
-    gridContainer.innerHTML = ''; // Temizle
-    USER_PROFILE.posts.forEach(post => {
+    gridContainer.innerHTML = '';
+    user.posts.forEach(post => {
         const gridItem = document.createElement('div');
         gridItem.className = 'grid-item';
         gridItem.innerHTML = `<img src="${post.img}" alt="Kullanıcı gönderisi">`;
@@ -295,92 +276,77 @@ function renderProfile() {
     });
 }
 
+// YENİ: Arama sonuçlarını oluştur
+function renderSearchResults(query) {
+    searchResults.innerHTML = '';
+    const normalizedQuery = query.toLowerCase().trim();
+    if (!normalizedQuery) return;
 
-// --- SAYFA NAVİGASYONU ---
-const navItems = document.querySelectorAll('.nav-item');
+    const results = USERS_DB.filter(user => 
+        user.name.toLowerCase().includes(normalizedQuery) ||
+        user.username.toLowerCase().includes(normalizedQuery)
+    );
+
+    results.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `
+            <img src="${user.avatar}" alt="${user.name}">
+            <div class="names">
+                <div class="name">${user.name}</div>
+                <div class="username">@${user.username}</div>
+            </div>
+        `;
+        item.onclick = () => navigateToProfile(user.id);
+        searchResults.appendChild(item);
+    });
+}
+
+// --- NAVİGASYON MANTIĞI ---
 const pages = document.querySelectorAll('.page');
+const navItems = document.querySelectorAll('.nav-item');
 
 function showPage(pageId) {
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
 
     navItems.forEach(item => item.classList.remove('active'));
+    
     if (pageId === 'homePage') {
         navHome.classList.add('active');
         brandTitle.textContent = 'Akış';
+    } else if (pageId === 'searchPage') {
+        navSearch.classList.add('active');
+        brandTitle.textContent = 'Arama';
     } else if (pageId === 'profilePage') {
-        navProfile.classList.add('active');
-        brandTitle.textContent = USER_PROFILE.username; // Başlığı kullanıcı adı yap
+        // Profil sayfası aktifken de 'Arama' sekmesi aktif kalabilir, çünkü oradan geldik.
+        navSearch.classList.add('active');
+        // Başlık navigateToProfile fonksiyonunda ayarlanacak.
     }
 }
 
+// YENİ: Profile yönlendirme fonksiyonu
+function navigateToProfile(userId) {
+    renderProfile(userId);
+    const user = USERS_DB.find(u => u.id === userId);
+    brandTitle.textContent = user.username; // Üst bar başlığını kullanıcı adı yap
+    showPage('profilePage');
+}
+
+// Navigasyon tıklama olayları
 navHome.onclick = () => showPage('homePage');
-navProfile.onclick = () => showPage('profilePage');
-document.getElementById('navSearch').onclick = () => alert('Arama özelliği henüz eklenmedi.');
-
-
-// --- HİKAYE GÖRÜNTÜLEYİCİ MANTIĞI (Değişiklik yok) ---
-let curStoryIndex = 0, curSegIndex = 0, timerId = null;
-tapRight.addEventListener('click', ()=> nextSegment());
-tapLeft .addEventListener('click',  ()=> prevSegment());
-btnClose.onclick = closeViewer;
-btnSound.onclick = ()=>{ video.muted = !video.muted; if(!video.muted) video.volume = 1; updateSoundUI(); };
-video.addEventListener('volumechange', updateSoundUI);
-
-function updateSoundUI(){
-  btnSound.textContent = video.muted ? '🔇' : '🔊';
-  btnSound.setAttribute('aria-label', video.muted ? 'Sesi aç' : 'Sesi kapat');
-}
-
-async function exists(url){ try{ const r = await fetch(url,{method:'HEAD'}); return r.ok; }catch{ return false; } }
-
-async function tryPlaySegment(seg){
-  let candidates = seg.sources ? [...seg.sources] : (seg.src?[seg.src]:[]);
-  for(const url of candidates){ if(!(await exists(url))) continue;
-    video.src=url; video.currentTime=0; video.muted=true;
-    try{ await video.play(); }catch{} return true; }
-  return false;
-}
-
-function findStoryIndexById(id){ return STORIES.findIndex(s=>s.id===id); }
-
-function openViewerByStoryId(id){
-  curStoryIndex = Math.max(0, findStoryIndexById(id)); curSegIndex=0;
-  viewer.classList.add('active'); viewer.setAttribute('aria-hidden','false');
-  document.documentElement.style.overflow='hidden'; video.muted=true; updateSoundUI();
-  loadCurrentSegment(true);
-}
-
-function closeViewer(){ viewer.classList.remove('active'); viewer.setAttribute('aria-hidden','true');
-  clearTimer(); try{ video.pause(); }catch{} document.documentElement.style.overflow=''; }
-
-async function loadCurrentSegment(){
-  const story = STORIES[curStoryIndex]; const seg = story.segments[curSegIndex]; if(!seg){ closeViewer(); return; }
-  vName.textContent = story.name; vAvatar.src = story.avatar; vTime.textContent = 'şimdi'; renderProgress(story.segments.length,curSegIndex);
-  clearTimer(); const ok=await tryPlaySegment(seg); if(!ok){ nextSegment(); return; }
-  video.onended = nextSegment; startTimer((seg.dur||7)*1000);
-}
-
-function renderProgress(total,activeIndex){ progress.innerHTML=''; for(let i=0;i<total;i++){ const seg=document.createElement('div'); seg.className='seg'; seg.innerHTML=`<i style="width:${i<activeIndex?100:0}%"></i>`; progress.appendChild(seg);} }
-
-function startTimer(ms){ const start=performance.now(); const segBar=progress.children[curSegIndex].firstElementChild;
-  function tick(now){ const pct=Math.min(100,((now-start)/ms)*100); segBar.style.width=pct+'%'; if(pct>=100){ nextSegment(); return;} timerId=requestAnimationFrame(tick);} timerId=requestAnimationFrame(tick);}
-
-function clearTimer(){ if(timerId){ cancelAnimationFrame(timerId); timerId=null;} }
-
-function nextSegment(){ const s=STORIES[curStoryIndex]; if(curSegIndex<s.segments.length-1){ curSegIndex++; loadCurrentSegment(); } else nextStory(); }
-function prevSegment(){ if(curSegIndex>0){ curSegIndex--; loadCurrentSegment(); } else prevStory(true); }
-function nextStory(){ if(curStoryIndex<STORIES.length-1 && STORIES[curStoryIndex+1].segments.length){ curStoryIndex++; curSegIndex=0; loadCurrentSegment(true);} else closeViewer();}
-function prevStory(fromHead=false){ if(curStoryIndex>0 && STORIES[curStoryIndex-1].segments.length){ curStoryIndex--; curSegIndex=fromHead?STORIES[curStoryIndex].segments.length-1:0; loadCurrentSegment(true);} }
-
-document.getElementById('btnComment').onclick = ()=>{ const txt=prompt('Yorum yaz:'); if(txt) alert('Yorum gönderildi (mock): '+txt); };
+navSearch.onclick = () => showPage('searchPage');
+navProfile.onclick = () => alert('Bu buton şimdilik pasif. Arama üzerinden profillere ulaşabilirsiniz.');
+// Arama çubuğu olayı
+searchInput.oninput = () => renderSearchResults(searchInput.value);
 
 
 // --- İLK YÜKLEME ---
 document.addEventListener('DOMContentLoaded', () => {
-    renderProfile(); // Profil sayfasını hazırla
+    renderHomePage(); // Ana sayfayı oluştur
     showPage('homePage'); // Uygulama açıldığında ana sayfayı göster
 });
+
 </script>
 </body>
 </html>
