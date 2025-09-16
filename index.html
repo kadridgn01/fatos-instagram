@@ -29,6 +29,8 @@ body{
 .row{max-width:var(--maxw); height:var(--topbar-h); margin:0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 16px;}
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
 .logo{height:28px}
+.back-btn{ display:none; margin-right:8px; height:36px; min-width:36px; border-radius:10px; border:1px solid var(--border); background:var(--soft); color:var(--ink); font-weight:800; cursor:pointer; }
+.back-btn.show{ display:inline-flex; align-items:center; justify-content:center; }
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px; display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .stories::-webkit-scrollbar{display:none}
 .story-chip{ flex:0 0 auto; width:74px; text-align:center; font-size:12px; color:var(--muted); background:transparent; border:0; padding:0; outline:none; cursor:pointer; }
@@ -107,6 +109,7 @@ body{
 
 <div class="topbar" role="banner">
   <div class="row">
+    <button id="btnBack" class="back-btn" aria-label="Geri">←</button>
     <div class="brand" aria-label="Marka">
       <img src="assets/logo.png" class="logo" alt="logo">
       <span id="brandTitle">Akış</span>
@@ -213,12 +216,14 @@ const USERS_DB = [
 ];
 
 // --- ANA SAYFA ---
-const STORIES_DB = USERS_DB.filter(u => u.segments.length > 0);
-const FEED_DB = [
-  { user: USERS_DB.find(u=>u.id==='fatosmacari'), post: USERS_DB.find(u=>u.id==='fatosmacari').posts[0] },
-  { user: USERS_DB.find(u=>u.id==='selimkaya'), post: USERS_DB.find(u=>u.id==='selimkaya').posts[0] }
-];
-
+// Dinamik akış: Fatoş'u ana sayfadan hariç tut, Peri'yi göster
+function getStories(){
+  return USERS_DB.filter(u => u.segments.length > 0 && u.id !== 'fatosmacari');
+}
+function getFeed(){
+  const peri = USERS_DB.find(u=>u.id==='peri');
+  return peri ? peri.posts.map(p => ({ user: peri, post: p })) : [];
+}
 // --- DOM ELEMENTLERİ ---
 const brandTitle = document.getElementById('brandTitle');
 const allPages = document.querySelectorAll('.page');
@@ -235,7 +240,9 @@ const btnClose = document.getElementById('btnClose');
 const tapLeft = document.getElementById('tapLeft');
 const tapRight = document.getElementById('tapRight');
 const postFeedPage = document.getElementById('postFeedPage');
+const btnBack = document.getElementById('btnBack');
 const viewerStage = document.getElementById('viewerStage');
+let backTarget = null;
 
 // --- RENDER FONKSİYONLARI ---
 function renderHomePage() {
@@ -244,18 +251,21 @@ function renderHomePage() {
   const storiesContainer = homePage.querySelector('.stories');
   const feedContainer = homePage.querySelector('.feed');
 
-  STORIES_DB.forEach(s => {
+  const STORIES = getStories();
+  const FEED = getFeed();
+
+  STORIES.forEach(s => {
     const chip = document.createElement('button');
     chip.className = 'story-chip';
-    chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
-    chip.onclick = () => openViewer(STORIES_DB, s.id);
+    chip.innerHTML = `<div class=\"story-ring\"><img class=\"story-avatar\" src=\"${s.avatar}\" alt=\"${s.name}\"></div><div class=\"story-name\">${s.name}</div>`;
+    chip.onclick = () => openViewer(STORIES, s.id);
     storiesContainer.appendChild(chip);
   });
 
-  FEED_DB.forEach(p => {
+  FEED.forEach(p => {
     const card = document.createElement('article');
     card.className = 'card';
-    card.innerHTML = `<div class="head"><img src="${p.user.avatar}" alt="${p.user.username}"><div class="user">${p.user.username}</div></div><img class="media" src="${p.post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
+    card.innerHTML = `<div class=\"head\"><img src=\"${p.user.avatar}\" alt=\"${p.user.username}\"><div class=\"user\">${p.user.username}</div></div><img class=\"media\" src=\"${p.post.img}\" alt=\"\"><div class=\"actions\"><span class=\"icon\">❤️</span><span class=\"icon\">💬</span><span class=\"icon\">↗️</span></div>`;
     feedContainer.appendChild(card);
   });
 }
@@ -328,7 +338,7 @@ function renderSearchResults(query) {
     const item = document.createElement('div');
     item.className = 'result-item';
     item.innerHTML = `<img src="${user.avatar}" alt="${user.name}"><div class="names"><div class="name">${user.name}</div><div class="muted">@${user.username}</div></div>`;
-    item.onclick = () => navigateToProfile(user.id);
+    item.onclick = () => navigateToProfile(user.id, 'searchPage');
     searchResults.appendChild(item);
   });
 }
@@ -415,10 +425,19 @@ function prevSegment() { if (currentSegmentIndex > 0) { currentSegmentIndex--; l
 function nextStory() { if (currentSourceIndex < storyDataSource.length - 1) { currentSourceIndex++; currentSegmentIndex = 0; loadCurrentSegment(); } else { closeViewer(); } }
 function prevStory() { if (currentSourceIndex > 0) { currentSourceIndex--; currentSegmentIndex = 0; loadCurrentSegment(); } }
 btnClose.onclick = closeViewer;
+window.addEventListener('keydown', e => { if (e.key === 'Escape') closeViewer(); });
 
 // Daha iyi dokunma desteği (tüm geniş alanlar tıklanabilir)
 ['click','touchend'].forEach(evt => {
   document.getElementById('tapRight').addEventListener(evt, nextSegment);
+  document.getElementById('tapLeft').addEventListener(evt, prevSegment);
+});
+
+// Back butonu kontrolü
+function showBack(target){ backTarget = target; if (btnBack) btnBack.classList.add('show'); }
+function hideBack(){ backTarget = null; if (btnBack) btnBack.classList.remove('show'); }
+if (btnBack) btnBack.onclick = () => { if (viewer.classList.contains('active')) { closeViewer(); } else if (backTarget) { showPage(backTarget); } else { goHome(); } };
+
   document.getElementById('tapLeft').addEventListener(evt, prevSegment);
 });
 
@@ -431,6 +450,13 @@ function navigateToPostFeed(userId, startIndex) {
     const card = document.createElement('article');
     card.className = 'card';
     card.id = `post-feed-${index}`;
+    card.innerHTML = `<div class=\"head\"><img src=\"${user.avatar}\" alt=\"${user.username}\"><div class=\"user\">${user.username}</div></div><img class=\"media\" src=\"${post.img}\" alt=\"\"><div class=\"actions\"><span class=\"icon\">❤️</span><span class=\"icon\">💬</span><span class=\"icon\">↗️</span></div>`;
+    postFeedPage.appendChild(card);
+  });
+  showBack('profilePage');
+  showPage('postFeedPage');
+  setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({block:'start'}); }, 50);
+}`;
     card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
     postFeedPage.appendChild(card);
   });
@@ -444,23 +470,25 @@ function showPage(pageId) {
   document.getElementById(pageId).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   let activeNav = null;
-  if(pageId === 'homePage') { activeNav = navHome; brandTitle.textContent = 'Akış'; }
-  else if(pageId === 'searchPage') { activeNav = navSearch; brandTitle.textContent = 'Arama'; }
-  else if(pageId === 'profilePage') { activeNav = navProfile; /* brandTitle profil açılırken set ediliyor */ }
-  else if(pageId === 'postFeedPage') { /* özel durum: alt bar seçimi yapma */ }
+  if(pageId === 'homePage') { activeNav = navHome; brandTitle.textContent = 'Akış'; hideBack(); }
+  else if(pageId === 'searchPage') { activeNav = navSearch; brandTitle.textContent = 'Arama'; hideBack(); }
+  else if(pageId === 'profilePage') { activeNav = navProfile; showBack('homePage'); }
+  else if(pageId === 'postFeedPage') { showBack('profilePage'); }
   if(activeNav) activeNav.classList.add('active');
 }
-function navigateToProfile(userId) {
+function navigateToProfile(userId, from='homePage') {
   const user = USERS_DB.find(u => u.id === userId);
   if (!user) return;
   renderProfile(userId);
   brandTitle.textContent = user.username;
   showPage('profilePage');
+  showBack(from);
 }
 
-navHome.onclick = () => showPage('homePage');
+function goHome(){ closeViewer(); renderHomePage(); showPage('homePage'); window.scrollTo({top:0, behavior:'instant'}); }
+navHome.onclick = goHome;
 navSearch.onclick = () => showPage('searchPage');
-navProfile.onclick = () => navigateToProfile('peri');
+navProfile.onclick = () => navigateToProfile('peri', 'homePage');
 
 let searchTimer;
 if (searchInput) {
