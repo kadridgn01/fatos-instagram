@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akış — Final Sürüm</title>
+<title>Akış — Peri'nin Macerası</title>
 
 <style>
 :root{
@@ -128,20 +128,17 @@ body{
 </div>
 
 <script>
-// --- VERİTABANI ---
+// --- VERİTABANI (PERİ & FATOŞ SENARYOSU) ---
 const USERS_DB = [
     {
-        id: "me",
-        username: "benim_adim",
-        name: "Benim Adım",
-        avatar: "https://i.pravatar.cc/150?u=me",
-        bio: "Bu benim profilim.\nUygulamayı test ediyorum!",
-        stats: { posts: 2, followers: "123", following: 45 },
-        segments: [],
-        posts: [
-            { img: `https://picsum.photos/800/1000?random=101`},
-            { img: `https://picsum.photos/800/800?random=102`},
-        ]
+        id: "peri",
+        username: "peri",
+        name: "Peri",
+        avatar: "https://i.pravatar.cc/150?u=peri",
+        bio: "Hayallerimin peşindeyim...",
+        stats: { posts: 3, followers: "212", following: 150 },
+        segments: [], // Peri'nin hikayesi yok
+        posts: Array.from({length: 3}, (_, i) => ({ img: `https://picsum.photos/800/900?random=${i+20}`}))
     },
     {
         id: "fatosmacari",
@@ -149,12 +146,12 @@ const USERS_DB = [
         name: "Fatoş Maçari",
         avatar: "https://i.pravatar.cc/150?u=fatos",
         bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨",
-        stats: { posts: 9, followers: "18.4B", following: 320 },
-        segments: [
+        stats: { posts: 12, followers: "18.4B", following: 320 },
+        segments: [ // Fatoş'un hikayeleri var
             { sources: ["https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"], dur: 10 },
             { sources: ["https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"], dur: 7 }
         ],
-        posts: Array.from({length: 9}, (_, i) => ({ img: `https://picsum.photos/800/${Math.floor(Math.random() * (1000 - 600 + 1)) + 600}?random=${i+1}`}))
+        posts: Array.from({length: 12}, (_, i) => ({ img: `https://picsum.photos/800/${Math.floor(Math.random() * (1000 - 700 + 1)) + 700}?random=${i+1}`}))
     },
     {
         id: "selimkaya",
@@ -163,16 +160,15 @@ const USERS_DB = [
         avatar: "https://i.pravatar.cc/150?u=selim",
         bio: "Dijital Sanatçı | Renklerin peşinde.",
         stats: { posts: 6, followers: "5.2B", following: 150 },
-        segments: [],
+        segments: [], // Selim'in hikayesi yok
         posts: Array.from({length: 6}, (_, i) => ({ img: `https://picsum.photos/800/800?random=${i+10}`}))
     }
 ];
 
-// Ana sayfa için veriler
-const STORIES_DB = USERS_DB.filter(u => u.id !== 'me' && u.segments.length > 0);
-const FEED_DB = [
-    { user: USERS_DB[1], post: USERS_DB[1].posts[0] },
-    { user: USERS_DB[2], post: USERS_DB[2].posts[0] }
+const STORIES_DB = USERS_DB.filter(u => u.segments.length > 0); // Sadece Fatoş'un hikayesi görünecek
+const FEED_DB = [ // Ana sayfada Fatoş ve Selim'in gönderileri
+    { user: USERS_DB.find(u=>u.id==='fatosmacari'), post: USERS_DB.find(u=>u.id==='fatosmacari').posts[0] },
+    { user: USERS_DB.find(u=>u.id==='selimkaya'), post: USERS_DB.find(u=>u.id==='selimkaya').posts[0] }
 ];
 
 // --- DOM ELEMENTLERİ ---
@@ -180,8 +176,7 @@ const brandTitle = document.getElementById('brandTitle');
 const allPages = document.querySelectorAll('.page');
 const navHome = document.getElementById('navHome');
 const navSearch = document.getElementById('navSearch');
-const navProfile = document.getElementById('navProfile'); // Düzeltildi
-// ... diğer elementler
+const navProfile = document.getElementById('navProfile');
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 const viewer = document.getElementById('viewer');
@@ -195,8 +190,6 @@ const tapRight = document.getElementById('tapRight');
 const postFeedPage = document.getElementById('postFeedPage');
 
 // --- RENDER FONKSİYONLARI ---
-
-// DÜZELTİLDİ: Ana sayfayı ve içeriğini tam olarak oluşturan fonksiyon
 function renderHomePage() {
     const homePage = document.getElementById('homePage');
     homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
@@ -214,15 +207,7 @@ function renderHomePage() {
     FEED_DB.forEach(p => {
         const card = document.createElement('article');
         card.className = 'card';
-        card.innerHTML = `
-            <div class="head">
-                <img src="${p.user.avatar}" alt="${p.user.username}">
-                <div class="user">${p.user.username}</div>
-            </div>
-            <img class="media" src="${p.post.img}" alt="">
-            <div class="actions">
-                <span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span>
-            </div>`;
+        card.innerHTML = `<div class="head"><img src="${p.user.avatar}" alt="${p.user.username}"><div class="user">${p.user.username}</div></div><img class="media" src="${p.post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
         feedContainer.appendChild(card);
     });
 }
@@ -232,7 +217,6 @@ function renderProfile(userId) {
     if (!user) return;
     document.getElementById('profileAvatar').src = user.avatar;
     document.getElementById('profileUsername').textContent = user.username;
-    // DÜZELTİLDİ: Biyografi artık ayarlanıyor
     document.getElementById('profileBio').textContent = user.bio;
     document.getElementById('profileStats').innerHTML = `<div class="stat-item"><span class="count">${user.stats.posts}</span> gönderi</div><div class="stat-item"><span class="count">${user.stats.followers}</span> takipçi</div><div class="stat-item"><span class="count">${user.stats.following}</span> takip</div>`;
     const avatarWrapper = document.getElementById('profileAvatarWrapper');
@@ -249,35 +233,30 @@ function renderProfile(userId) {
         const gridItem = document.createElement('div');
         gridItem.className = 'grid-item';
         gridItem.innerHTML = `<img src="${post.img}" alt="Gönderi ${index+1}">`;
-        // GÜNCELLENDİ: Tıklayınca dikey akışa yönlendir
         gridItem.onclick = () => navigateToPostFeed(user.id, index);
         gridContainer.appendChild(gridItem);
     });
 }
 
-// ... renderSearchResults (değişiklik yok)
-function renderSearchResults(query) { /*...*/ }
+function renderSearchResults(query) {
+    const normalizedQuery = query.toLowerCase().trim();
+    if (normalizedQuery.length < 2) { searchResults.innerHTML = ''; return; }
+    const results = USERS_DB.filter(u => (u.name.toLowerCase().includes(normalizedQuery) || u.username.toLowerCase().includes(normalizedQuery)) && u.id !== 'peri');
+    searchResults.innerHTML = '';
+    results.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.innerHTML = `<img src="${user.avatar}" alt="${user.name}"><div class="names"><div class="name">${user.name}</div></div>`;
+        item.onclick = () => navigateToProfile(user.id);
+        searchResults.appendChild(item);
+    });
+}
 
-// --- HİKAYE İZLEYİCİ MANTIĞI (Tam ve Çalışır Durumda) ---
+// --- HİKAYE İZLEYİCİ ---
 let storyDataSource = [], currentSourceIndex = 0, currentSegmentIndex = 0, timerId = null;
-function openViewer(source, startId) {
-    storyDataSource = source;
-    currentSourceIndex = Math.max(0, source.findIndex(s => s.id === startId));
-    currentSegmentIndex = 0;
-    viewer.classList.add('active'); document.documentElement.style.overflow = 'hidden';
-    loadCurrentSegment();
-}
+function openViewer(source, startId) { storyDataSource = source; currentSourceIndex = Math.max(0, source.findIndex(s => s.id === startId)); currentSegmentIndex = 0; viewer.classList.add('active'); document.documentElement.style.overflow = 'hidden'; loadCurrentSegment(); }
 function closeViewer() { viewer.classList.remove('active'); document.documentElement.style.overflow = ''; clearTimer(); try { video.pause(); } catch(e) {} }
-async function loadCurrentSegment() {
-    const user = storyDataSource[currentSourceIndex];
-    const segment = user.segments[currentSegmentIndex];
-    if (!user || !segment) { closeViewer(); return; }
-    vName.textContent = user.name; vAvatar.src = user.avatar;
-    renderProgress(user.segments.length, currentSegmentIndex);
-    clearTimer();
-    video.src = segment.sources[0];
-    try { await video.play(); startTimer((segment.dur || 7) * 1000); } catch (e) { nextSegment(); }
-}
+async function loadCurrentSegment() { const user = storyDataSource[currentSourceIndex]; const segment = user.segments[currentSegmentIndex]; if (!user || !segment) { closeViewer(); return; } vName.textContent = user.name; vAvatar.src = user.avatar; renderProgress(user.segments.length, currentSegmentIndex); clearTimer(); video.src = segment.sources[0]; try { await video.play(); startTimer((segment.dur || 7) * 1000); } catch (e) { nextSegment(); } }
 function renderProgress(total, activeIndex) { progress.innerHTML = ''; for (let i = 0; i < total; i++) { const seg = document.createElement('div'); seg.className = 'seg'; seg.innerHTML = `<i style="width:${i < activeIndex ? 100 : 0}%"></i>`; progress.appendChild(seg); } }
 function startTimer(ms) { const start = performance.now(); const segBar = progress.children[currentSegmentIndex]?.firstElementChild; if (!segBar) return; function tick(now) { const pct = Math.min(100, ((now - start) / ms) * 100); segBar.style.width = pct + '%'; if (pct >= 100) { nextSegment(); return; } timerId = requestAnimationFrame(tick); } timerId = requestAnimationFrame(tick); }
 function clearTimer() { if (timerId) cancelAnimationFrame(timerId); timerId = null; }
@@ -290,31 +269,20 @@ tapRight.addEventListener('click', nextSegment);
 tapLeft.addEventListener('click', prevSegment);
 video.addEventListener('ended', nextSegment);
 
-// --- YENİ: Dikey Gönderi Akış MANTIĞI ---
+// --- DİKEY GÖNDERİ AKIŞI ---
 function navigateToPostFeed(userId, startIndex) {
     const user = USERS_DB.find(u => u.id === userId);
     if (!user) return;
-    postFeedPage.innerHTML = ''; // Sayfayı temizle
+    postFeedPage.innerHTML = '';
     user.posts.forEach((post, index) => {
         const card = document.createElement('article');
         card.className = 'card';
-        card.id = `post-feed-${index}`; // Kaydırma için ID ata
-        card.innerHTML = `
-            <div class="head">
-                <img src="${user.avatar}" alt="${user.username}">
-                <div class="user">${user.username}</div>
-            </div>
-            <img class="media" src="${post.img}" alt="">
-            <div class="actions">
-                <span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span>
-            </div>`;
+        card.id = `post-feed-${index}`;
+        card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
         postFeedPage.appendChild(card);
     });
     showPage('postFeedPage');
-    // Tıklanan gönderiye scroll yap
-    setTimeout(() => {
-        document.getElementById(`post-feed-${startIndex}`).scrollIntoView();
-    }, 50);
+    setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView(); }, 50);
 }
 
 // --- NAVİGASYON ---
@@ -322,9 +290,19 @@ function showPage(pageId) {
     allPages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    const activeNav = { homePage: navHome, searchPage: navSearch, profilePage: navProfile, postFeedPage: navProfile }[pageId];
+    let activeNav = null;
+    if(pageId === 'homePage') activeNav = navHome;
+    else if(pageId === 'searchPage') activeNav = navSearch;
+    else if(pageId === 'profilePage' || pageId === 'postFeedPage') {
+        // Görüntülenen profil Peri'nin kendi profili ise Profil ikonunu, değilse Arama ikonunu aktif yap
+        const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
+        if(currentProfileUser && currentProfileUser.id === 'peri') {
+            activeNav = navProfile;
+        } else {
+            activeNav = navSearch;
+        }
+    }
     if(activeNav) activeNav.classList.add('active');
-    
     if (pageId === 'homePage') brandTitle.textContent = 'Akış';
     else if (pageId === 'searchPage') brandTitle.textContent = 'Arama';
 }
@@ -336,8 +314,7 @@ function navigateToProfile(userId) {
 }
 navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
-// DÜZELTİLDİ: Profil ikonu tıklandığında 'me' id'li kullanıcıya gider
-navProfile.onclick = () => navigateToProfile('me');
+navProfile.onclick = () => navigateToProfile('peri'); // Profil ikonu her zaman Peri'nin profiline gider
 let searchTimer;
 searchInput.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { renderSearchResults(searchInput.value); }, 400); };
 
@@ -346,7 +323,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHomePage();
     showPage('homePage');
 });
-
 </script>
 </body>
 </html>
