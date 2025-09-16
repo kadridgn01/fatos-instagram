@@ -112,7 +112,7 @@ body{
     <button id="btnBack" class="back-btn" aria-label="Geri">←</button>
     <div class="brand" aria-label="Marka">
       <img src="assets/logo.png" class="logo" alt="logo">
-      <span id="brandTitle">Fatoş Maçari</span>
+      <span id="brandTitle">Akış</span>
     </div>
   </div>
 </div>
@@ -196,8 +196,8 @@ const USERS_DB = [
     username: "fatosmacari",
     name: "Fatoş Maçari",
     avatar: "assets/fatos-avatar.jpg",
-    bio: "Hayatı dolu dolu yaşa ✨",
-    stats: { posts: 12, followers: "800", following: 320 },
+    bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕ Hayatı dolu dolu yaşa ✨",
+    stats: { posts: 12, followers: "18.4B", following: 320 },
     segments: [
       { sources: ["assets/fatos-story-1.mp4"], dur: 10 },
       { sources: ["assets/green.jpg"], dur: 5 }
@@ -206,24 +206,49 @@ const USERS_DB = [
   },
   {
     id: "selimkaya",
-    username: "",
+    username: "selimkaya_art",
     name: "Selim Kaya",
-    avatar: "assets/peri-avatar.jpg",
+    avatar: "assets/selim-avatar.jpg",
     bio: "Dijital Sanatçı | Renklerin peşinde.",
     stats: { posts: 6, followers: "5.2B", following: 150 },
     segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }],
     posts: Array.from({length: 6}, (_, i) => ({ img: `assets/selim-post-${i + 1}.jpg`}))
+  },
+  {
+    id: "kadri",
+    username: "kadridgn",
+    name: "Kadri Doğan",
+    avatar: "assets/kadri-av.jpg",
+    bio: "",
+    stats: { posts: 1, followers: "1.2K", following: 300 },
+    segments: [],
+    posts: [ { img: "assets/kadri.jpg" } ]
+  },
+  {
+    id: "okan",
+    username: "okanerdemt",
+    name: "Okan Erdem",
+    avatar: "assets/okan-av.jpg",
+    bio: "",
+    stats: { posts: 1, followers: "845", following: 210 },
+    segments: [],
+    posts: [ { img: "assets/okan.jpg" } ]
   }
 ];
 
 // --- ANA SAYFA ---
-// Dinamik akış: Fatoş'u ana sayfadan hariç tut, Peri'yi göster
+// Dinamik akış: Fatoş'u ana sayfadan hariç tut
 function getStories(){
   return USERS_DB.filter(u => u.segments.length > 0 && u.id !== 'fatosmacari');
 }
 function getFeed(){
-  const peri = USERS_DB.find(u=>u.id==='peri');
-  return peri ? peri.posts.map(p => ({ user: peri, post: p })) : [];
+  const ids = ['kadri','okan'];
+  const pick = ids.map(id => USERS_DB.find(u=>u.id===id)).filter(Boolean);
+  const out = [];
+  pick.forEach(u => {
+    if (u.posts && u.posts.length) out.push({ user: u, post: u.posts[0] });
+  });
+  return out;
 }
 
 // --- DOM ELEMENTLERİ ---
@@ -493,13 +518,32 @@ if (searchInput) {
 // --- SMOKE TESTS ---
 (function runTests(){
   try{
+    // DOM temel kontrolleri
     console.assert(document.getElementById('searchInput'), 'searchInput missing');
     console.assert(typeof getStories==='function', 'getStories missing');
+
+    // Fatoş bio stringi: satır sonu içermemeli (malformed string hatasını önlemek için)
+    const fatos = USERS_DB.find(u=>u.id==='fatosmacari');
+    console.assert(typeof fatos.bio === 'string', 'Fatoş bio must be a string');
+    console.assert(!/\n/.test(fatos.bio), 'Fatoş bio must not contain raw newlines');
+
+    // Stories: Fatoş hariç, en az bir story olmalı (Selim var)
     const stories = getStories();
     console.assert(!stories.some(u=>u.id==='fatosmacari'), 'Fatoş should be excluded from stories');
+    console.assert(stories.length >= 1, 'There should be at least one story');
+
+    // Feed: Peri yok; Kadri ve Okan var
     const feed = getFeed();
-    console.assert(feed.every(it=>it.user && it.user.id==='peri'), 'Feed should be Peri only');
-    console.assert(document.getElementById('navHome'), 'navHome missing');
+    console.assert(feed.length>=1, 'Feed should not be empty');
+    console.assert(feed.every(it=>it.user && it.user.id!=='peri'), 'Peri must not appear in home feed');
+    const ids = feed.map(it=>it.user.id);
+    console.assert(ids.includes('kadri') && ids.includes('okan'), 'Feed should include Kadri and Okan');
+
+    // renderHomePage, kart sayısı feed uzunluğuna uymalı
+    renderHomePage();
+    const cards = document.querySelectorAll('#homePage .feed .card');
+    console.assert(cards.length === feed.length, 'Rendered feed card count must match feed length');
+
     console.log('%cSmoke tests passed','color:#6ab0ff');
   }catch(e){
     console.error('Smoke tests failed', e);
