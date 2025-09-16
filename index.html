@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akış — Gecikmeli Arama</title>
+<title>Akış — Ana Sayfa Düzeltildi</title>
 
 <style>
 :root{
@@ -90,6 +90,7 @@ body{
     </div>
   </div>
 </div>
+
 <main id="homePage" class="page"></main>
 <main id="searchPage" class="page">
   <div class="search-page">
@@ -110,6 +111,7 @@ body{
     <div class="post-grid" id="postGrid"></div>
   </div>
 </main>
+
 <nav class="bottombar">
   <div class="nav-item" id="navHome">🏠<span>Ana Sayfa</span></div>
   <div class="nav-item" id="navSearch">🔍<span>Arama</span></div>
@@ -118,6 +120,15 @@ body{
 
 <script>
 // --- VERİLER ---
+const STORIES = [
+  { id:"me",  name:"Sen",  avatar:"assets/me.jpg",  segments:[] },
+  { id:"u1",  name:"Peri", avatar:"assets/peri.jpg", segments:[ { sources:["assets/1_h264.mp4","assets/1.webm"], dur:8 } ] },
+  { id:"u2",  name:"Selim", avatar:"assets/selim-av.jpg", segments:[] },
+];
+const FEED = [
+  { user:"kadridgn",  avatar:"assets/kadri-av.jpg", img:"assets/kadri.jpg", time:"2s", likes:42 },
+  { user:"okanerdemt", avatar:"assets/okan-av.jpg", img:"assets/okan.jpg", time:"1g",  likes:87 },
+];
 const USERS_DB = [
     {
         id: "fatosmacari",
@@ -129,7 +140,6 @@ const USERS_DB = [
         posts: [
             { img: "assets/fatos-p1.jpg" }, { img: "assets/fatos-p2.jpg" }, { img: "assets/fatos-p3.jpg" },
             { img: "assets/fatos-p4.jpg" }, { img: "assets/fatos-p5.jpg" }, { img: "assets/fatos-p6.jpg" },
-            { img: "assets/fatos-p7.jpg" }, { img: "assets/fatos-p8.jpg" }, { img: "assets/fatos-p9.jpg" },
         ]
     },
     {
@@ -156,10 +166,35 @@ const searchResults = document.getElementById('searchResults');
 
 // --- RENDER FONKSİYONLARI ---
 
+// GÜNCELLENDİ: Ana sayfayı oluşturan fonksiyon düzeltildi
 function renderHomePage() {
+    // 1. Ana sayfa konteynerinin içini temizleyip temel iskeleti kur
     homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
-    // Gerçek bir uygulamada bu veriler de dinamik olarak render edilirdi.
+    
+    // 2. İskelet içindeki stories ve feed alanlarını seç
+    const storiesContainer = homePage.querySelector('.stories');
+    const feedContainer = homePage.querySelector('.feed');
+
+    // 3. Hikayeleri oluştur ve konteynere ekle
+    STORIES.forEach(s => {
+        const chip = document.createElement('button');
+        chip.className = 'story-chip' + (s.id === 'me' ? ' me' : '');
+        chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
+        chip.onclick = () => { if (s.segments.length) alert('Hikaye izleyici bu demoda aktif değil.'); else alert('Hikaye yok.'); };
+        storiesContainer.appendChild(chip);
+    });
+
+    // 4. Akış gönderilerini oluştur ve konteynere ekle
+    FEED.forEach(p => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<div class="head"><img src="${p.avatar}" alt="${p.user}"><div class="user">${p.user}</div><div class="time">${p.time}</div></div><img class="media" src="${p.img}" alt=""><div class="actions"><span class="icon like">❤️</span><span class="icon">💬</span><span class="icon">↗</span></div>`;
+        const likeBtn = card.querySelector('.like');
+        likeBtn.onclick = () => { likeBtn.textContent = likeBtn.textContent === '❤️' ? '💖' : '❤️'; };
+        feedContainer.appendChild(card);
+    });
 }
+
 
 function renderProfile(userId) {
     const user = USERS_DB.find(u => u.id === userId);
@@ -178,22 +213,17 @@ function renderProfile(userId) {
     });
 }
 
-// GÜNCELLENDİ: Arama sonuçları fonksiyonu
 function renderSearchResults(query) {
     const normalizedQuery = query.toLowerCase().trim();
-    
-    // YENİ: En az 2 karakter girilmediyse arama yapma ve sonuçları temizle
     if (normalizedQuery.length < 2) {
         searchResults.innerHTML = '';
         return;
     }
-
     const results = USERS_DB.filter(user => 
         user.name.toLowerCase().includes(normalizedQuery) ||
         user.username.toLowerCase().includes(normalizedQuery)
     );
-
-    searchResults.innerHTML = ''; // Önceki sonuçları temizle
+    searchResults.innerHTML = '';
     results.forEach(user => {
         const item = document.createElement('div');
         item.className = 'result-item';
@@ -235,21 +265,16 @@ function navigateToProfile(userId) {
     showPage('profilePage');
 }
 
-// Navigasyon olayları
 navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
 navProfile.onclick = () => alert('Bu buton şimdilik pasif. Arama üzerinden profillere ulaşabilirsiniz.');
 
-// YENİ: Arama gecikmesi için bir zamanlayıcı değişkeni
 let searchTimer;
-
-// GÜNCELLENDİ: Arama çubuğu olayı gecikmeli çalışacak
 searchInput.oninput = () => {
-    clearTimeout(searchTimer); // Her tuşa basıldığında önceki zamanlayıcıyı iptal et
-    // Yeni bir zamanlayıcı başlat
+    clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
         renderSearchResults(searchInput.value);
-    }, 400); // 400 milisaniye (0.4 saniye) bekledikten sonra aramayı yap
+    }, 400);
 };
 
 // --- İLK YÜKLEME ---
