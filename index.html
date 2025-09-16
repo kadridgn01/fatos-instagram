@@ -178,6 +178,7 @@ body{
 </div>
 
 <script>
+'use strict';
 // --- VERİTABANI ---
 const USERS_DB = [
   {
@@ -224,6 +225,7 @@ function getFeed(){
   const peri = USERS_DB.find(u=>u.id==='peri');
   return peri ? peri.posts.map(p => ({ user: peri, post: p })) : [];
 }
+
 // --- DOM ELEMENTLERİ ---
 const brandTitle = document.getElementById('brandTitle');
 const allPages = document.querySelectorAll('.page');
@@ -386,7 +388,6 @@ async function loadCurrentSegment() {
     viewerStage.appendChild(video);
     try {
       await video.play();
-      // FIX: duration NaN olursa zamanlayıcıyı garantiye al
       const fallbackDur = (segment.dur || 7) * 1000;
       startTimer(isFinite(video.duration) && video.duration > 0 ? video.duration * 1000 : fallbackDur);
     } catch (e) {
@@ -438,9 +439,6 @@ function showBack(target){ backTarget = target; if (btnBack) btnBack.classList.a
 function hideBack(){ backTarget = null; if (btnBack) btnBack.classList.remove('show'); }
 if (btnBack) btnBack.onclick = () => { if (viewer.classList.contains('active')) { closeViewer(); } else if (backTarget) { showPage(backTarget); } else { goHome(); } };
 
-  document.getElementById('tapLeft').addEventListener(evt, prevSegment);
-});
-
 // --- DİKEY GÖNDERİ AKIŞI ---
 function navigateToPostFeed(userId, startIndex) {
   const user = USERS_DB.find(u => u.id === userId);
@@ -454,12 +452,6 @@ function navigateToPostFeed(userId, startIndex) {
     postFeedPage.appendChild(card);
   });
   showBack('profilePage');
-  showPage('postFeedPage');
-  setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({block:'start'}); }, 50);
-}`;
-    card.innerHTML = `<div class="head"><img src="${user.avatar}" alt="${user.username}"><div class="user">${user.username}</div></div><img class="media" src="${post.img}" alt=""><div class="actions"><span class="icon">❤️</span><span class="icon">💬</span><span class="icon">↗️</span></div>`;
-    postFeedPage.appendChild(card);
-  });
   showPage('postFeedPage');
   setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({block:'start'}); }, 50);
 }
@@ -497,6 +489,22 @@ if (searchInput) {
     searchTimer = setTimeout(() => { renderSearchResults(searchInput.value); }, 300);
   };
 }
+
+// --- SMOKE TESTS ---
+(function runTests(){
+  try{
+    console.assert(document.getElementById('searchInput'), 'searchInput missing');
+    console.assert(typeof getStories==='function', 'getStories missing');
+    const stories = getStories();
+    console.assert(!stories.some(u=>u.id==='fatosmacari'), 'Fatoş should be excluded from stories');
+    const feed = getFeed();
+    console.assert(feed.every(it=>it.user && it.user.id==='peri'), 'Feed should be Peri only');
+    console.assert(document.getElementById('navHome'), 'navHome missing');
+    console.log('%cSmoke tests passed','color:#6ab0ff');
+  }catch(e){
+    console.error('Smoke tests failed', e);
+  }
+})();
 
 // --- İLK YÜKLEME ---
 document.addEventListener('DOMContentLoaded', () => {
