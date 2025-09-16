@@ -112,7 +112,7 @@ body{
     <button id="btnBack" class="back-btn" aria-label="Geri">←</button>
     <div class="brand" aria-label="Marka">
       <img src="assets/logo.png" class="logo" alt="logo">
-      <span id="brandTitle">Fatoş Maçari</span>
+      <span id="brandTitle">Akış</span>
     </div>
   </div>
 </div>
@@ -121,7 +121,6 @@ body{
 <main id="homePage" class="page" aria-label="Ana sayfa"></main>
 
 <main id="searchPage" class="page search-page" aria-label="Arama">
-  <!-- FIX: Eksik olan arama input ve sonuç listesi eklendi -->
   <input id="searchInput" class="search-bar" type="search" placeholder="Kullanıcı ara…" autocomplete="off" aria-label="Kullanıcı ara">
   <div id="searchResults" class="search-results" aria-live="polite"></div>
 </main>
@@ -193,10 +192,10 @@ const USERS_DB = [
   },
   {
     id: "fatosmacari",
-    username: "macarifatos",
+    username: "fatosmacari",
     name: "Fatoş Maçari",
     avatar: "assets/fatos-avatar.jpg",
-    bio: "Hayatı dolu dolu yaşa ✨",
+    bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕ Hayatı dolu dolu yaşa ✨",
     stats: { posts: 12, followers: "18.4B", following: 320 },
     segments: [
       { sources: ["assets/fatos-story-1.mp4"], dur: 10 },
@@ -207,8 +206,8 @@ const USERS_DB = [
   {
     id: "selimkaya",
     username: "selimkaya_art",
-    name: "Peri",
-    avatar: "assets/peri-avatar.jpg",
+    name: "Selim Kaya",
+    avatar: "assets/selim-avatar.jpg",
     bio: "Dijital Sanatçı | Renklerin peşinde.",
     stats: { posts: 6, followers: "5.2B", following: 150 },
     segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }],
@@ -270,6 +269,7 @@ const postFeedPage = document.getElementById('postFeedPage');
 const btnBack = document.getElementById('btnBack');
 const viewerStage = document.getElementById('viewerStage');
 let backTarget = null;
+let currentPage = 'homePage';
 
 // --- RENDER FONKSİYONLARI ---
 function renderHomePage() {
@@ -302,13 +302,11 @@ function renderProfile(userId) {
   if (!user) return;
   const isMe = user.id === 'peri';
 
-  // Başlık ve handle
   const nameEl = document.getElementById('profileName');
   const handleEl = document.getElementById('profileHandle');
   if (nameEl) nameEl.textContent = user.name;
   if (handleEl) handleEl.textContent = '@' + user.username;
 
-  // Avatar ve story halkası
   const avatarEl = document.getElementById('profileAvatar');
   if (avatarEl) avatarEl.src = user.avatar;
   const avatarWrapper = document.getElementById('profileAvatarWrapper');
@@ -322,15 +320,12 @@ function renderProfile(userId) {
     }
   }
 
-  // Biyografi
   const bioEl = document.getElementById('profileBio');
   if (bioEl) bioEl.textContent = user.bio || '';
 
-  // Sayaçlar (Instagram gibi)
   const countsEl = document.getElementById('profileCounts');
   if (countsEl) countsEl.innerHTML = `<b>${user.stats.posts}</b> gönderi &nbsp;&nbsp; <b>${user.stats.followers}</b> takipçi`;
 
-  // CTA butonları
   const btnPrimary = document.getElementById('btnPrimaryProfile');
   const btnSecondary = document.getElementById('btnSecondaryProfile');
   if (btnPrimary) {
@@ -342,7 +337,6 @@ function renderProfile(userId) {
     btnSecondary.onclick = () => alert(`${user.name} kişisine mesaj (demo)`);
   }
 
-  // Gönderi ızgarası
   const gridContainer = document.getElementById('postGrid');
   if (gridContainer) {
     gridContainer.innerHTML = '';
@@ -379,15 +373,25 @@ function openViewer(source, startId) {
   viewer.classList.add('active');
   viewer.setAttribute('aria-hidden', 'false');
   document.documentElement.style.overflow = 'hidden';
+  try { history.pushState({ viewer: true }, ''); } catch {}
   loadCurrentSegment();
 }
-function closeViewer() {
+function closeViewer(fromPop = false) {
+  const existingVideo = viewerStage.querySelector('video');
+  if (existingVideo) {
+    try { existingVideo.pause(); } catch {}
+    existingVideo.removeAttribute('src');
+    try { existingVideo.load && existingVideo.load(); } catch {}
+  }
+  clearTimer();
+  progress.innerHTML = '';
+  viewerStage.innerHTML = '';
   viewer.classList.remove('active');
   viewer.setAttribute('aria-hidden', 'true');
   document.documentElement.style.overflow = '';
-  clearTimer();
-  const videoEl = viewerStage.querySelector('video');
-  if (videoEl) videoEl.pause();
+  if (!fromPop && (history.state && history.state.viewer)) {
+    try { history.back(); } catch {}
+  }
 }
 async function loadCurrentSegment() {
   const user = storyDataSource[currentSourceIndex];
@@ -452,6 +456,11 @@ function nextStory() { if (currentSourceIndex < storyDataSource.length - 1) { cu
 function prevStory() { if (currentSourceIndex > 0) { currentSourceIndex--; currentSegmentIndex = 0; loadCurrentSegment(); } }
 btnClose.onclick = closeViewer;
 window.addEventListener('keydown', e => { if (e.key === 'Escape') closeViewer(); });
+window.addEventListener('popstate', () => {
+  if (viewer.classList.contains('active')) {
+    closeViewer(true);
+  }
+});
 
 // Daha iyi dokunma desteği (tüm geniş alanlar tıklanabilir)
 ['click','touchend'].forEach(evt => {
@@ -482,7 +491,14 @@ function navigateToPostFeed(userId, startIndex) {
 }
 
 // --- NAVİGASYON ---
+function cleanupPage(id){
+  if (id === 'postFeedPage') {
+    postFeedPage.innerHTML = '';
+  }
+}
 function showPage(pageId) {
+  cleanupPage(currentPage);
+
   allPages.forEach(page => page.classList.remove('active'));
   document.getElementById(pageId).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -492,8 +508,11 @@ function showPage(pageId) {
   else if(pageId === 'profilePage') { activeNav = navProfile; showBack('homePage'); }
   else if(pageId === 'postFeedPage') { showBack('profilePage'); }
   if(activeNav) activeNav.classList.add('active');
+
+  currentPage = pageId;
 }
 function navigateToProfile(userId, from='homePage') {
+  if (viewer.classList.contains('active')) closeViewer();
   const user = USERS_DB.find(u => u.id === userId);
   if (!user) return;
   renderProfile(userId);
@@ -522,7 +541,7 @@ if (searchInput) {
     console.assert(document.getElementById('searchInput'), 'searchInput missing');
     console.assert(typeof getStories==='function', 'getStories missing');
 
-    // Fatoş bio stringi: satır sonu içermemeli (malformed string hatasını önlemek için)
+    // Fatoş bio stringi: satır sonu içermemeli
     const fatos = USERS_DB.find(u=>u.id==='fatosmacari');
     console.assert(typeof fatos.bio === 'string', 'Fatoş bio must be a string');
     console.assert(!/\n/.test(fatos.bio), 'Fatoş bio must not contain raw newlines');
@@ -543,6 +562,22 @@ if (searchInput) {
     renderHomePage();
     const cards = document.querySelectorAll('#homePage .feed .card');
     console.assert(cards.length === feed.length, 'Rendered feed card count must match feed length');
+
+    // Viewer cleanup testi: sahne ve progress boşalmalı
+    viewerStage.innerHTML = '<div id="tmp"></div>';
+    progress.innerHTML = '<i></i>';
+    viewer.classList.add('active');
+    closeViewer(true);
+    console.assert(!viewer.classList.contains('active'), 'Viewer should be closed');
+    console.assert(viewerStage.childElementCount === 0, 'Viewer stage should be cleared');
+    console.assert(progress.childElementCount === 0, 'Progress should be cleared');
+
+    // Post feed cleanup testi: sayfadan çıkınca temizlenmeli
+    navigateToPostFeed('kadri', 0);
+    const hadChildren = postFeedPage.childElementCount > 0;
+    showPage('profilePage');
+    console.assert(hadChildren, 'Post feed initially populated');
+    console.assert(postFeedPage.childElementCount === 0, 'Post feed should be cleared on leaving page');
 
     console.log('%cSmoke tests passed','color:#6ab0ff');
   }catch(e){
