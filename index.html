@@ -26,12 +26,17 @@ body{
 }
 .page{ display: none; } .page.active{ display: block; }
 .topbar{ position:fixed; inset:0 0 auto 0; z-index:50; height: calc(var(--topbar-h) + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); background:#0e121b; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; }
-.row{max-width:var(--maxw); height:var(--topbar-h); margin:0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 16px;}
+.row{max-width:var(--maxw); height:var(--topbar-h); margin:0 auto; width:100%; display:flex; align-items:center; justify-content:center; padding:0 16px; position:relative;}
+.topbar-back{ display: none; cursor: pointer; font-size: 16px; font-weight: 600; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+.topbar-back.visible{ display: block; }
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
+.brand.centered{ position: absolute; left: 50%; transform: translateX(-50%); }
 .logo{height:28px}
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px; display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .stories::-webkit-scrollbar{display:none}
 .story-chip{ flex:0 0 auto; width:74px; text-align:center; font-size:12px; color:var(--muted); background:transparent; border:0; padding:0; outline:none; cursor:pointer; }
+.story-chip.me .story-ring{ background: transparent; position: relative; }
+.story-chip.me .story-ring::after{ content: '+'; position: absolute; bottom: -2px; right: 0; background-color: var(--accent); color: white; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; border: 2px solid var(--paper); }
 .story-ring{ width:68px; height:68px; padding:2px; border-radius:50%; background: conic-gradient(from 0deg, #6ab0ff, #a873ff, #6ab0ff); display:grid; place-items:center; }
 .story-avatar{ width:64px; height:64px; border-radius:50%; object-fit:cover; border:0; }
 .story-name{margin-top:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -87,8 +92,9 @@ body{
 
 <div class="topbar">
     <div class="row">
-        <div class="brand">
-            <img src="assets/logo.png" class="logo" alt="logo">
+        <div id="topbarBack" class="topbar-back">‹ Geri</div>
+        <div class="brand centered" id="brandContainer">
+            <img src="assets/logo.png" class="logo" alt="logo" id="brandLogo">
             <span id="brandTitle">Akış</span>
         </div>
     </div>
@@ -121,52 +127,21 @@ body{
 <script>
 // --- VERİTABANI ---
 const USERS_DB = [
-    {
-        id: "peri",
-        username: "peri",
-        name: "Peri",
-        avatar: "assets/peri-avatar.jpg",
-        bio: "Hayallerimin peşindeyim...",
-        stats: { posts: 3, followers: "212", following: 150 },
-        segments: [],
-        posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`}))
-    },
-    {
-        id: "fatosmacari",
-        username: "fatosmacari",
-        name: "Fatoş Maçari",
-        avatar: "assets/fatos-avatar.jpg",
-        bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨",
-        stats: { posts: 12, followers: "18.4B", following: 320 },
-        segments: [
-            { sources: ["assets/fatos-story-1.mp4"], dur: 10 },
-            { sources: ["assets/green.jpg"], dur: 5 }
-        ],
-        posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`}))
-    },
-    {
-        id: "selimkaya",
-        username: "selimkaya_art",
-        name: "Selim Kaya",
-        avatar: "assets/selim-avatar.jpg",
-        bio: "Dijital Sanatçı | Renklerin peşinde.",
-        stats: { posts: 6, followers: "5.2B", following: 150 },
-        segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }],
-        posts: Array.from({length: 6}, (_, i) => ({ img: `assets/selim-post-${i + 1}.jpg`}))
-    }
+    { id: "peri", username: "peri", name: "Peri", avatar: "assets/peri-avatar.jpg", bio: "Hayallerimin peşindeyim...", stats: { posts: 3, followers: "212", following: 150 }, segments: [], posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`})), following: ["selimkaya"] },
+    { id: "macari_fatos", username: "macari_fatos", name: "Fatoş Maçari", avatar: "assets/fatos-avatar.jpg", bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨", stats: { posts: 12, followers: "18.4B", following: 320 }, segments: [ { sources: ["assets/fatos-story-1.mp4"], dur: 10 }, { sources: ["assets/green.jpg"], dur: 5 } ], posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`})) },
+    { id: "selimkaya", username: "selimkaya_art", name: "Selim Kaya", avatar: "assets/selim-avatar.jpg", bio: "Dijital Sanatçı | Renklerin peşinde.", stats: { posts: 6, followers: "5.2B", following: 150 }, segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }], posts: Array.from({length: 6}, (_, i) => ({ img: `assets/selim-post-${i + 1}.jpg`})) }
 ];
 
-// --- ANA SAYFA MANTIĞI ---
-// DİKKAT: Bu basit versiyonda "stalklama" mantığı yoktur. Fatoş ana sayfada görünür.
-// Düzeltilmiş ve en son istediğin versiyon için bir sonraki cevabıma bakmalısın.
-const STORIES_DB = USERS_DB.filter(u => u.segments.length > 0);
-const FEED_DB = [
-    { user: USERS_DB.find(u=>u.id==='fatosmacari'), post: USERS_DB.find(u=>u.id==='fatosmacari').posts[0] },
-    { user: USERS_DB.find(u=>u.id==='selimkaya'), post: USERS_DB.find(u=>u.id==='selimkaya').posts[0] }
-];
+// --- ANA SAYFA MANTIĞI (STALKLAMA) ---
+const periUser = USERS_DB.find(u => u.id === 'peri');
+const followedUsers = USERS_DB.filter(u => periUser.following.includes(u.id));
+const STORIES_DB = followedUsers.filter(u => u.segments.length > 0);
+const FEED_DB = followedUsers.map(user => ({ user: user, post: user.posts[0] })).filter(p => p.post);
 
 // --- DOM ELEMENTLERİ ---
 const brandTitle = document.getElementById('brandTitle');
+const brandLogo = document.getElementById('brandLogo');
+const brandContainer = document.getElementById('brandContainer');
 const allPages = document.querySelectorAll('.page');
 const navHome = document.getElementById('navHome');
 const navSearch = document.getElementById('navSearch');
@@ -182,6 +157,8 @@ const tapLeft = document.getElementById('tapLeft');
 const tapRight = document.getElementById('tapRight');
 const postFeedPage = document.getElementById('postFeedPage');
 const viewerStage = document.getElementById('viewerStage');
+const topbarBack = document.getElementById('topbarBack');
+let lastProfileId = null;
 
 // --- RENDER FONKSİYONLARI ---
 function renderHomePage() {
@@ -189,7 +166,12 @@ function renderHomePage() {
     homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
     const storiesContainer = homePage.querySelector('.stories');
     const feedContainer = homePage.querySelector('.feed');
-
+    const periChip = document.createElement('button');
+    periChip.className = 'story-chip me';
+    periChip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${periUser.avatar}" alt="${periUser.name}"></div><div class="story-name">Hikayen</div>`;
+    periChip.onclick = () => alert('Kendi hikayeni ekle (simülasyon)');
+    storiesContainer.appendChild(periChip);
+    if (STORIES_DB.length === 0 && followedUsers.length > 0) storiesContainer.style.padding = '10px 12px 0';
     STORIES_DB.forEach(s => {
         const chip = document.createElement('button');
         chip.className = 'story-chip';
@@ -197,7 +179,6 @@ function renderHomePage() {
         chip.onclick = () => openViewer(STORIES_DB, s.id);
         storiesContainer.appendChild(chip);
     });
-
     FEED_DB.forEach(p => {
         const card = document.createElement('article');
         card.className = 'card';
@@ -244,35 +225,11 @@ function renderSearchResults(query) {
     });
 }
 
-// --- HİKAYE İZLEYİCİ (RESİM & VİDEO DESTEKLİ) ---
+// --- HİKAYE İZLEYİCİ ---
 let storyDataSource = [], currentSourceIndex = 0, currentSegmentIndex = 0, timerId = null;
 function openViewer(source, startId) { storyDataSource = source; currentSourceIndex = Math.max(0, source.findIndex(s => s.id === startId)); currentSegmentIndex = 0; viewer.classList.add('active'); document.documentElement.style.overflow = 'hidden'; loadCurrentSegment(); }
 function closeViewer() { viewer.classList.remove('active'); document.documentElement.style.overflow = ''; clearTimer(); const videoEl = viewerStage.querySelector('video'); if (videoEl) videoEl.pause(); }
-async function loadCurrentSegment() {
-    const user = storyDataSource[currentSourceIndex];
-    const segment = user.segments[currentSegmentIndex];
-    if (!user || !segment) { closeViewer(); return; }
-    vName.textContent = user.name; vAvatar.src = user.avatar;
-    renderProgress(user.segments.length, currentSegmentIndex);
-    clearTimer(); viewerStage.innerHTML = '';
-    const sourceUrl = segment.sources[0];
-    const isImage = sourceUrl.match(/\.(jpeg|jpg|png|gif|webp)$/);
-    if (isImage) {
-        const img = document.createElement('img');
-        img.src = sourceUrl;
-        img.className = 'story-media';
-        viewerStage.appendChild(img);
-        startTimer((segment.dur || 7) * 1000);
-    } else {
-        const video = document.createElement('video');
-        video.className = 'story-media';
-        video.playsInline = true; video.webkitPlaysInline = true; video.muted = true; video.preload = 'metadata';
-        video.src = sourceUrl;
-        video.addEventListener('ended', nextSegment);
-        viewerStage.appendChild(video);
-        try { await video.play(); startTimer((segment.dur || video.duration) * 1000); } catch (e) { nextSegment(); }
-    }
-}
+async function loadCurrentSegment() { const user = storyDataSource[currentSourceIndex]; const segment = user.segments[currentSegmentIndex]; if (!user || !segment) { closeViewer(); return; } vName.textContent = user.name; vAvatar.src = user.avatar; renderProgress(user.segments.length, currentSegmentIndex); clearTimer(); viewerStage.innerHTML = ''; const sourceUrl = segment.sources[0]; const isImage = sourceUrl.match(/\.(jpeg|jpg|png|gif|webp)$/); if (isImage) { const img = document.createElement('img'); img.src = sourceUrl; img.className = 'story-media'; viewerStage.appendChild(img); startTimer((segment.dur || 7) * 1000); } else { const video = document.createElement('video'); video.className = 'story-media'; video.playsInline = true; video.webkitPlaysInline = true; video.muted = true; video.preload = 'metadata'; video.src = sourceUrl; video.addEventListener('ended', nextSegment); viewerStage.appendChild(video); try { await video.play(); startTimer((segment.dur || video.duration)*1000); } catch (e) { nextSegment(); } } }
 function renderProgress(total, activeIndex) { progress.innerHTML = ''; for (let i = 0; i < total; i++) { const seg = document.createElement('div'); seg.className = 'seg'; seg.innerHTML = `<i style="width:${i < activeIndex ? 100 : 0}%"></i>`; progress.appendChild(seg); } }
 function startTimer(ms) { const start = performance.now(); const segBar = progress.children[currentSegmentIndex]?.firstElementChild; if (!segBar) return; function tick(now) { const pct = Math.min(100, ((now - start) / ms) * 100); segBar.style.width = pct + '%'; if (pct >= 100) { nextSegment(); return; } timerId = requestAnimationFrame(tick); } timerId = requestAnimationFrame(tick); }
 function clearTimer() { if (timerId) cancelAnimationFrame(timerId); timerId = null; }
@@ -286,6 +243,7 @@ tapLeft.addEventListener('click', prevSegment);
 
 // --- DİKEY GÖNDERİ AKIŞI ---
 function navigateToPostFeed(userId, startIndex) {
+    lastProfileId = userId;
     const user = USERS_DB.find(u => u.id === userId);
     if (!user) return;
     postFeedPage.innerHTML = '';
@@ -297,7 +255,7 @@ function navigateToPostFeed(userId, startIndex) {
         postFeedPage.appendChild(card);
     });
     showPage('postFeedPage');
-    setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView(); }, 50);
+    setTimeout(() => { document.getElementById(`post-feed-${startIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
 }
 
 // --- NAVİGASYON ---
@@ -305,20 +263,27 @@ function showPage(pageId) {
     allPages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    const isSubPage = pageId === 'postFeedPage';
+    topbarBack.classList.toggle('visible', isSubPage);
+    brandLogo.style.display = isSubPage ? 'none' : 'block';
+    brandContainer.classList.toggle('centered', !isSubPage);
     let activeNav = null;
-    if(pageId === 'homePage') activeNav = navHome;
-    else if(pageId === 'searchPage') activeNav = navSearch;
-    else if(pageId === 'profilePage' || pageId === 'postFeedPage') {
+    let newTitle = brandTitle.textContent;
+    if(pageId === 'homePage') {
+        activeNav = navHome;
+        newTitle = 'Akış';
+    } else if(pageId === 'searchPage') {
+        activeNav = navSearch;
+        newTitle = 'Arama';
+    } else if(pageId === 'profilePage') {
         const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
-        if(currentProfileUser && currentProfileUser.id === 'peri') {
-            activeNav = navProfile;
-        } else {
-            activeNav = navSearch;
-        }
+        activeNav = (currentProfileUser && currentProfileUser.id === 'peri') ? navProfile : navSearch;
+    } else if (pageId === 'postFeedPage') {
+        activeNav = (lastProfileId === 'peri') ? navProfile : navSearch;
+        newTitle = 'Gönderiler';
     }
     if(activeNav) activeNav.classList.add('active');
-    if (pageId === 'homePage') brandTitle.textContent = 'Akış';
-    else if (pageId === 'searchPage') brandTitle.textContent = 'Arama';
+    brandTitle.textContent = newTitle;
 }
 function navigateToProfile(userId) {
     renderProfile(userId);
@@ -329,6 +294,7 @@ function navigateToProfile(userId) {
 navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
 navProfile.onclick = () => navigateToProfile('peri');
+topbarBack.onclick = () => { if(lastProfileId) navigateToProfile(lastProfileId); };
 let searchTimer;
 searchInput.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { renderSearchResults(searchInput.value); }, 400); };
 
