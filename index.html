@@ -324,8 +324,8 @@ navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
 navProfile.onclick = () => navigateToProfile('peri');
 topbarBack.onclick = () => { if(lastProfileId) navigateToProfile(lastProfileId); };
-let searchTimer;
 const searchInput = document.getElementById('searchInput');
+let searchTimer;
 searchInput.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { renderSearchResults(searchInput.value); }, 400); };
 
 // --- İLK YÜKLEME ---
