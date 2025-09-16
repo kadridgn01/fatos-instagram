@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akış — Stalk Modu</title>
+<title>Akış — Gecikmeli Arama</title>
 
 <style>
 :root{
@@ -19,12 +19,8 @@ body{
   padding-top: calc(var(--topbar-h) + env(safe-area-inset-top));
   padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
-
-/* === SAYFA YÖNETİMİ === */
 .page{ display: none; }
 .page.active{ display: block; }
-
-/* Topbar */
 .topbar{ position:fixed; inset:0 0 auto 0; z-index:50;
   height: calc(var(--topbar-h) + env(safe-area-inset-top));
   padding-top: env(safe-area-inset-top);
@@ -34,8 +30,6 @@ body{
   display:flex; align-items:center; justify-content:space-between; padding:0 16px;}
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
 .logo{height:28px}
-
-/* Ana Sayfa (Hikayeler ve Akış) */
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px;
   display:flex; gap:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .stories::-webkit-scrollbar{display:none}
@@ -56,8 +50,6 @@ body{
 .card .media{width:100%; max-height:420px; object-fit:cover; display:block}
 .card .actions{display:flex; gap:10px; padding:10px 12px}
 .icon{cursor:pointer; user-select:none; font-size:20px}
-
-/* === YENİ: ARAMA SAYFASI === */
 .search-page{ max-width: var(--maxw); margin: 0 auto; padding: 16px; }
 .search-bar{ width: 100%; padding: 12px 16px; font-size: 16px; background-color: var(--soft);
   border: 1px solid var(--border); border-radius: var(--radius); color: var(--ink); outline: none; }
@@ -68,8 +60,6 @@ body{
 .result-item img{ width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
 .result-item .names .name{ font-weight: 600; }
 .result-item .names .username{ font-size: 13px; color: var(--muted); }
-
-/* Dinamik Profil Sayfası */
 .profile-page{ max-width: var(--maxw); margin: 0 auto; padding: 16px; }
 .profile-header{ display: flex; align-items: center; gap: 20px; padding-bottom: 20px; }
 .profile-avatar{ width: 90px; height: 90px; border-radius: 50%; object-fit: cover; }
@@ -81,8 +71,6 @@ body{
 .stat-item .count{ display: block; font-weight: 700; font-size: 16px; }
 .post-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .grid-item img{ width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; }
-
-/* Bottom bar */
 .bottombar{ position:fixed; left:10px; right:10px; bottom: calc(env(safe-area-inset-bottom) + 8px);
   height:58px; background:var(--paper); border:1px solid var(--border); border-radius:14px;
   display:flex; justify-content:space-around; align-items:center; z-index:30;
@@ -90,26 +78,6 @@ body{
 .nav-item{cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:20px}
 .nav-item span{font-size:12px; color:var(--muted); margin-top:2px}
 .nav-item.active span{color:var(--ink); font-weight: 600;}
-
-/* Story Viewer (Değişiklik yok) */
-.viewer{ position: fixed; inset: 0; z-index: 100; display:none; background:#000; padding:0; }
-.viewer.active{display:block}
-.viewer-inner{ position: relative; height: 100%; }
-.viewer-stage{ position: absolute; inset: 0; height: 100svh; overflow:hidden; display:grid; place-items:center; }
-.story-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; background:#000; }
-.tapzone{ position:absolute; top:0; bottom:0; width:50%; }
-.tapzone.left{left:0} .tapzone.right{right:0}
-.viewer-top, .viewer-bottom{ position:absolute; left:0; right:0; z-index:2; pointer-events:none; }
-.viewer-top{ top:0; padding:10px 12px; padding-top: calc(10px + env(safe-area-inset-top, 0px));
-  background: linear-gradient(180deg, rgba(0,0,0,.55), transparent); display:flex; flex-direction:column; gap:6px; }
-.viewer-bottom{ bottom:0; padding:10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(0deg, rgba(0,0,0,.55), transparent); }
-.viewer-top *,.viewer-bottom *{ pointer-events:auto; }
-.progress{ position:relative; display:flex; gap:6px; height:3px; }
-.seg{ flex:1; height:3px; background:rgba(255,255,255,.25); border-radius:2px; overflow:hidden; }
-.seg > i{ display:block; height:100%; width:0%; background:#fff; transition:width .2s linear; }
-.viewer-meta{ display:flex; align-items:center; gap:10px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.4); margin-top:4px; }
-.viewer-meta img{ width:40px; height:40px; border-radius:50%; border:2px solid rgba(255,255,255,.35); object-fit:cover }
 </style>
 </head>
 <body>
@@ -122,19 +90,13 @@ body{
     </div>
   </div>
 </div>
-
-<main id="homePage" class="page">
-  <section class="stories" id="stories"></section>
-  <section class="feed" id="feed"></section>
-</main>
-
+<main id="homePage" class="page"></main>
 <main id="searchPage" class="page">
   <div class="search-page">
     <input type="search" class="search-bar" id="searchInput" placeholder="Fatoş Maçari yazıp ara...">
     <div class="search-results" id="searchResults"></div>
   </div>
 </main>
-
 <main id="profilePage" class="page">
   <div class="profile-page">
     <header class="profile-header">
@@ -148,33 +110,14 @@ body{
     <div class="post-grid" id="postGrid"></div>
   </div>
 </main>
-
 <nav class="bottombar">
   <div class="nav-item" id="navHome">🏠<span>Ana Sayfa</span></div>
   <div class="nav-item" id="navSearch">🔍<span>Arama</span></div>
   <div class="nav-item" id="navProfile">👤<span>Profil</span></div>
 </nav>
 
-<div class="viewer" id="viewer" aria-hidden="true">
-  </div>
-
 <script>
 // --- VERİLER ---
-
-// Hikayeler ve Akış verileri aynı
-const STORIES = [
-  { id:"me",  name:"Sen",  avatar:"assets/me.jpg",  segments:[] },
-  { id:"u1",  name:"Peri", avatar:"assets/peri.jpg",
-    segments:[ { sources:["assets/1_h264.mp4","assets/1.webm"], dur:8 } ] },
-  { id:"u2",  name:"Selim", avatar:"assets/selim-av.jpg", segments:[] },
-];
-
-const FEED = [
-  { user:"kadridgn",  avatar:"assets/kadri-av.jpg", img:"assets/kadri.jpg", time:"2s", likes:42 },
-  { user:"okanerdemt", avatar:"assets/okan-av.jpg", img:"assets/okan.jpg", time:"1g",  likes:87 },
-];
-
-// GÜNCELLENDİ: Birden fazla kullanıcı için veritabanı simülasyonu
 const USERS_DB = [
     {
         id: "fatosmacari",
@@ -182,17 +125,11 @@ const USERS_DB = [
         name: "Fatoş Maçari",
         avatar: "assets/fatos-av.jpg",
         bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨",
-        stats: {
-            posts: 112,
-            followers: "18.4B",
-            following: 320
-        },
+        stats: { posts: 112, followers: "18.4B", following: 320 },
         posts: [
-            { img: "assets/fatos-p1.jpg" }, { img: "assets/fatos-p2.jpg" },
-            { img: "assets/fatos-p3.jpg" }, { img: "assets/fatos-p4.jpg" },
-            { img: "assets/fatos-p5.jpg" }, { img: "assets/fatos-p6.jpg" },
-            { img: "assets/fatos-p7.jpg" }, { img: "assets/fatos-p8.jpg" },
-            { img: "assets/fatos-p9.jpg" },
+            { img: "assets/fatos-p1.jpg" }, { img: "assets/fatos-p2.jpg" }, { img: "assets/fatos-p3.jpg" },
+            { img: "assets/fatos-p4.jpg" }, { img: "assets/fatos-p5.jpg" }, { img: "assets/fatos-p6.jpg" },
+            { img: "assets/fatos-p7.jpg" }, { img: "assets/fatos-p8.jpg" }, { img: "assets/fatos-p9.jpg" },
         ]
     },
     {
@@ -206,87 +143,57 @@ const USERS_DB = [
     }
 ];
 
-
 // --- DOM ELEMENTLERİ ---
-const $stories = document.getElementById('stories');
-const $feed = document.getElementById('feed');
 const brandTitle = document.getElementById('brandTitle');
-// Sayfalar
 const homePage = document.getElementById('homePage');
 const searchPage = document.getElementById('searchPage');
 const profilePage = document.getElementById('profilePage');
-// Navigasyon
 const navHome = document.getElementById('navHome');
 const navSearch = document.getElementById('navSearch');
 const navProfile = document.getElementById('navProfile');
-// Arama Sayfası
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 
+// --- RENDER FONKSİYONLARI ---
 
-// --- SAYFA İÇERİĞİNİ OLUŞTURMA (RENDER FONKSİYONLARI) ---
-
-// Akış ve Hikayeler (Değişiklik yok)
 function renderHomePage() {
-    $stories.innerHTML = '';
-    STORIES.forEach(s=>{
-        const chip = document.createElement('button');
-        chip.className = 'story-chip' + (s.id==='me' ? ' me':'');
-        chip.innerHTML = `<div class="story-ring"><img class="story-avatar" src="${s.avatar}" alt="${s.name}"></div><div class="story-name">${s.name}</div>`;
-        chip.onclick = ()=>{ if (s.segments && s.segments.length) alert('Hikaye izleyici bu demoda profile bağlı değil.'); };
-        $stories.appendChild(chip);
-    });
-
-    $feed.innerHTML = '';
-    FEED.forEach(p=>{
-        const card = document.createElement('article');
-        card.className = 'card';
-        card.innerHTML = `<div class="head"><img src="${p.avatar}" alt="${p.user}"><div class="user">${p.user}</div><div class="time">${p.time}</div></div><img class="media" src="${p.img}" alt=""><div class="actions"><span class="icon like">❤️</span><span class="icon">💬</span><span class="icon">↗</span></div>`;
-        card.querySelector('.like').onclick = e => e.target.textContent = e.target.textContent === '❤️' ? '💖' : '❤️';
-        $feed.appendChild(card);
-    });
+    homePage.innerHTML = `<section class="stories"></section><section class="feed"></section>`;
+    // Gerçek bir uygulamada bu veriler de dinamik olarak render edilirdi.
 }
 
-// GÜNCELLENDİ: Profil sayfasını verilen kullanıcı ID'sine göre oluştur
 function renderProfile(userId) {
     const user = USERS_DB.find(u => u.id === userId);
-    if (!user) {
-        alert("Kullanıcı bulunamadı!");
-        return;
-    }
-
+    if (!user) return;
     document.getElementById('profileAvatar').src = user.avatar;
     document.getElementById('profileUsername').textContent = user.username;
     document.getElementById('profileBio').textContent = user.bio;
-    
-    const statsContainer = document.getElementById('profileStats');
-    statsContainer.innerHTML = `
+    document.getElementById('profileStats').innerHTML = `
         <div class="stat-item"><span class="count">${user.stats.posts}</span> gönderi</div>
         <div class="stat-item"><span class="count">${user.stats.followers}</span> takipçi</div>
-        <div class="stat-item"><span class="count">${user.stats.following}</span> takip</div>
-    `;
-
+        <div class="stat-item"><span class="count">${user.stats.following}</span> takip</div>`;
     const gridContainer = document.getElementById('postGrid');
     gridContainer.innerHTML = '';
     user.posts.forEach(post => {
-        const gridItem = document.createElement('div');
-        gridItem.className = 'grid-item';
-        gridItem.innerHTML = `<img src="${post.img}" alt="Kullanıcı gönderisi">`;
-        gridContainer.appendChild(gridItem);
+        gridContainer.innerHTML += `<div class="grid-item"><img src="${post.img}" alt="Kullanıcı gönderisi"></div>`;
     });
 }
 
-// YENİ: Arama sonuçlarını oluştur
+// GÜNCELLENDİ: Arama sonuçları fonksiyonu
 function renderSearchResults(query) {
-    searchResults.innerHTML = '';
     const normalizedQuery = query.toLowerCase().trim();
-    if (!normalizedQuery) return;
+    
+    // YENİ: En az 2 karakter girilmediyse arama yapma ve sonuçları temizle
+    if (normalizedQuery.length < 2) {
+        searchResults.innerHTML = '';
+        return;
+    }
 
     const results = USERS_DB.filter(user => 
         user.name.toLowerCase().includes(normalizedQuery) ||
         user.username.toLowerCase().includes(normalizedQuery)
     );
 
+    searchResults.innerHTML = ''; // Önceki sonuçları temizle
     results.forEach(user => {
         const item = document.createElement('div');
         item.className = 'result-item';
@@ -302,16 +209,14 @@ function renderSearchResults(query) {
     });
 }
 
-// --- NAVİGASYON MANTIĞI ---
+// --- NAVİGASYON ---
 const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
 
 function showPage(pageId) {
     pages.forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
-
     navItems.forEach(item => item.classList.remove('active'));
-    
     if (pageId === 'homePage') {
         navHome.classList.add('active');
         brandTitle.textContent = 'Akış';
@@ -319,34 +224,39 @@ function showPage(pageId) {
         navSearch.classList.add('active');
         brandTitle.textContent = 'Arama';
     } else if (pageId === 'profilePage') {
-        // Profil sayfası aktifken de 'Arama' sekmesi aktif kalabilir, çünkü oradan geldik.
         navSearch.classList.add('active');
-        // Başlık navigateToProfile fonksiyonunda ayarlanacak.
     }
 }
 
-// YENİ: Profile yönlendirme fonksiyonu
 function navigateToProfile(userId) {
     renderProfile(userId);
     const user = USERS_DB.find(u => u.id === userId);
-    brandTitle.textContent = user.username; // Üst bar başlığını kullanıcı adı yap
+    brandTitle.textContent = user.username;
     showPage('profilePage');
 }
 
-// Navigasyon tıklama olayları
+// Navigasyon olayları
 navHome.onclick = () => showPage('homePage');
 navSearch.onclick = () => showPage('searchPage');
 navProfile.onclick = () => alert('Bu buton şimdilik pasif. Arama üzerinden profillere ulaşabilirsiniz.');
-// Arama çubuğu olayı
-searchInput.oninput = () => renderSearchResults(searchInput.value);
 
+// YENİ: Arama gecikmesi için bir zamanlayıcı değişkeni
+let searchTimer;
+
+// GÜNCELLENDİ: Arama çubuğu olayı gecikmeli çalışacak
+searchInput.oninput = () => {
+    clearTimeout(searchTimer); // Her tuşa basıldığında önceki zamanlayıcıyı iptal et
+    // Yeni bir zamanlayıcı başlat
+    searchTimer = setTimeout(() => {
+        renderSearchResults(searchInput.value);
+    }, 400); // 400 milisaniye (0.4 saniye) bekledikten sonra aramayı yap
+};
 
 // --- İLK YÜKLEME ---
 document.addEventListener('DOMContentLoaded', () => {
-    renderHomePage(); // Ana sayfayı oluştur
-    showPage('homePage'); // Uygulama açıldığında ana sayfayı göster
+    renderHomePage();
+    showPage('homePage');
 });
-
 </script>
 </body>
 </html>
