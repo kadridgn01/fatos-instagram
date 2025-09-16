@@ -12,7 +12,6 @@
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 
 <style>
-/* ... Stil kodları öncekiyle tamamen aynı ... */
 :root{
   --bg:#0f1115; --paper:#12151c; --ink:#e7e9ee; --muted:#9aa3af;
   --accent:#5da9ff; --border:#1f2330; --soft:#181c25; --radius:14px;
@@ -30,8 +29,11 @@ body{
 .row{max-width:var(--maxw); height:var(--topbar-h); margin:0 auto; width:100%; display:flex; align-items:center; justify-content:center; padding:0 16px; position:relative;}
 .topbar-back{ display: none; cursor: pointer; font-size: 16px; font-weight: 600; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
 .topbar-back.visible{ display: block; }
+/* DÜZELTİLDİ: Başlığın ortalanması için CSS düzeltmesi */
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
+.brand.centered{ position: absolute; left: 50%; transform: translateX(-50%); }
 .logo{height:28px}
+
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px; display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .stories::-webkit-scrollbar{display:none}
 .story-chip{ flex:0 0 auto; width:74px; text-align:center; font-size:12px; color:var(--muted); background:transparent; border:0; padding:0; outline:none; cursor:pointer; }
@@ -93,7 +95,7 @@ body{
 <div class="topbar">
   <div class="row">
     <div id="topbarBack" class="topbar-back">‹ Geri</div>
-    <div class="brand" id="brandContainer">
+    <div class="brand centered" id="brandContainer">
       <img src="assets/logo.png" class="logo" alt="logo" id="brandLogo">
       <span id="brandTitle">Akış</span>
     </div>
@@ -128,7 +130,6 @@ body{
 // --- VERİTABANI ---
 const USERS_DB = [
     { id: "peri", username: "peri", name: "Peri", avatar: "assets/peri-avatar.jpg", bio: "Hayallerimin peşindeyim...", stats: { posts: 3, followers: "212", following: 150 }, segments: [], posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`})), following: ["selimkaya"] },
-    // GÜNCELLENDİ: Fatoş'un id ve username'i değiştirildi.
     { id: "macari_fatos", username: "macari_fatos", name: "Fatoş Maçari", avatar: "assets/fatos-avatar.jpg", bio: "Gezgin ruh ✈️ | Kahve tutkunu ☕\nHayatı dolu dolu yaşa ✨", stats: { posts: 12, followers: "18.4B", following: 320 }, segments: [ { sources: ["assets/fatos-story-1.mp4"], dur: 10 }, { sources: ["assets/green.jpg"], dur: 5 } ], posts: Array.from({length: 12}, (_, i) => ({ img: `assets/fatos-post-${i + 1}.jpg`})) },
     { id: "selimkaya", username: "selimkaya_art", name: "Selim Kaya", avatar: "assets/selim-avatar.jpg", bio: "Dijital Sanatçı | Renklerin peşinde.", stats: { posts: 6, followers: "5.2B", following: 150 }, segments: [ { sources: ["assets/selim-story-1.mp4"], dur: 8 }], posts: Array.from({length: 6}, (_, i) => ({ img: `assets/selim-post-${i + 1}.jpg`})) }
 ];
@@ -268,10 +269,11 @@ function showPage(pageId) {
     const isSubPage = pageId === 'postFeedPage';
     topbarBack.classList.toggle('visible', isSubPage);
     brandLogo.style.display = isSubPage ? 'none' : 'block';
-    brandContainer.style.transform = isSubPage ? 'none' : 'translateX(-50%)';
-
+    brandContainer.classList.toggle('centered', !isSubPage);
+    
     let activeNav = null;
-    let newTitle = '';
+    let newTitle = brandTitle.textContent; // Mevcut başlığı koru
+
     if(pageId === 'homePage') {
         activeNav = navHome;
         newTitle = 'Akış';
@@ -281,7 +283,6 @@ function showPage(pageId) {
     } else if(pageId === 'profilePage') {
         const currentProfileUser = USERS_DB.find(u => u.username === brandTitle.textContent);
         activeNav = (currentProfileUser && currentProfileUser.id === 'peri') ? navProfile : navSearch;
-        newTitle = brandTitle.textContent; // Başlık zaten navigateToProfile'da ayarlandı.
     } else if (pageId === 'postFeedPage') {
         activeNav = (lastProfileId === 'peri') ? navProfile : navSearch;
         newTitle = 'Gönderiler';
