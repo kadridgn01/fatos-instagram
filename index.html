@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Akış — Yerel Assetler</title>
+<title>Akış — Proje Final</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12151c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 
 <style>
 /* ... Stil kodları öncekiyle tamamen aynı ... */
@@ -23,6 +29,7 @@ body{
 .topbar{ position:fixed; inset:0 0 auto 0; z-index:50; height: calc(var(--topbar-h) + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); background:#0e121b; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; }
 .row{max-width:var(--maxw); height:var(--topbar-h); margin:0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 16px;}
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px;}
+.logo{height:28px}
 .stories{ max-width:var(--maxw); margin:0 auto; padding:10px 12px; display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .stories::-webkit-scrollbar{display:none}
 .story-chip{ flex:0 0 auto; width:74px; text-align:center; font-size:12px; color:var(--muted); background:transparent; border:0; padding:0; outline:none; cursor:pointer; }
@@ -79,7 +86,14 @@ body{
 </head>
 <body>
 
-<div class="topbar"><div class="row"><div class="brand"><span id="brandTitle">Akış</span></div></div></div>
+<div class="topbar">
+  <div class="row">
+    <div class="brand">
+      <img src="assets/logo.png" class="logo" alt="logo">
+      <span id="brandTitle">Akış</span>
+    </div>
+  </div>
+</div>
 <main id="homePage" class="page"></main>
 <main id="searchPage" class="page">
   <div class="search-page">
@@ -127,7 +141,7 @@ body{
 </div>
 
 <script>
-// DEĞİŞİKLİK: Bütün görseller artık 'assets' klasöründen gelecek şekilde güncellendi.
+// --- VERİTABANI ---
 const USERS_DB = [
     {
         id: "peri",
@@ -137,11 +151,7 @@ const USERS_DB = [
         bio: "Hayallerimin peşindeyim...",
         stats: { posts: 3, followers: "212", following: 150 },
         segments: [],
-        posts: [
-            { img: "assets/peri-post-1.jpg" },
-            { img: "assets/peri-post-2.jpg" },
-            { img: "assets/peri-post-3.jpg" },
-        ]
+        posts: Array.from({length: 3}, (_, i) => ({ img: `assets/peri-post-${i + 1}.jpg`}))
     },
     {
         id: "fatosmacari",
@@ -168,12 +178,13 @@ const USERS_DB = [
     }
 ];
 
-// ... Geri kalan tüm JavaScript kodları öncekiyle tamamen aynı ...
 const STORIES_DB = USERS_DB.filter(u => u.segments.length > 0);
 const FEED_DB = [
     { user: USERS_DB.find(u=>u.id==='fatosmacari'), post: USERS_DB.find(u=>u.id==='fatosmacari').posts[0] },
     { user: USERS_DB.find(u=>u.id==='selimkaya'), post: USERS_DB.find(u=>u.id==='selimkaya').posts[0] }
 ];
+
+// ... Geri kalan tüm JavaScript kodları öncekiyle tamamen aynı ...
 const brandTitle = document.getElementById('brandTitle');
 const allPages = document.querySelectorAll('.page');
 const navHome = document.getElementById('navHome');
